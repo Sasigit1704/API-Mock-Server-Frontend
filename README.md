@@ -1,70 +1,354 @@
-# Getting Started with Create React App
+# API Mock Server & Scenario Simulator
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+> 🟢 **Project Status:** Week 1 Foundation Completed
 
-## Available Scripts
+A React + ASP.NET Core based internal developer tool for creating, managing, and organizing configurable mock REST APIs. This project enables frontend developers and QA engineers to continue application development and testing without depending on backend API availability.
 
-In the project directory, you can run:
+---
 
-### `npm start`
+# 📖 Project Overview
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+The **API Mock Server & Scenario Simulator** is an internal developer tool designed to reduce backend dependencies during software development.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+It provides a visual interface to create, edit, organize, and manage configurable mock REST APIs while storing all endpoint definitions in MongoDB. As the project evolves, these mock APIs will be capable of simulating real-world backend behavior such as success responses, server errors, delays, timeouts, malformed JSON responses, and other testing scenarios without requiring changes to application code.
 
-### `npm test`
+This repository currently contains the **Week 1 – Foundation** implementation of the project.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+# ❗ Problem Statement
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Frontend developers and QA engineers often depend on backend API availability before they can begin development and testing. This dependency delays feature implementation, integration, and quality assurance.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+The **API Mock Server & Scenario Simulator** addresses this challenge by allowing teams to configure and manage mock REST APIs that behave like real backend services, enabling parallel development and improving overall productivity.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+# 🎯 Project Goals
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- Create configurable mock REST APIs dynamically.
+- Provide an intuitive user interface for API management.
+- Organize APIs into reusable collections.
+- Support multiple environments.
+- Simulate real-world API behaviors.
+- Reduce dependency on backend availability.
+- Improve collaboration between frontend, backend, and QA teams.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+# ✨ Week 1 Features
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Frontend (React)
 
-## Learn More
+- Dashboard
+- API Builder
+- Collections Management
+- Environment Management
+- Responsive Dashboard Layout
+- Sidebar Navigation
+- Top Navigation Bar
+- Search & Filtering
+- Modern Enterprise User Interface
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Backend (ASP.NET Core Web API)
 
-### Code Splitting
+- CRUD APIs for Mock Endpoints
+- CRUD APIs for Collections
+- CRUD APIs for Environments
+- MongoDB Integration
+- REST API Architecture
+- Swagger API Documentation
+- Request Validation
+- Layered Architecture
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+---
 
-### Analyzing the Bundle Size
+## Database
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### MongoDB Collections
 
-### Making a Progressive Web App
+- MockEndpoint
+- Collection
+- Environment
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+> **Note:** Additional collections such as **MockScenario** and **RequestLog** will be introduced in future development phases.
 
-### Advanced Configuration
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+# 🛠 Technology Stack
 
-### Deployment
+## Frontend
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- React (Create React App)
+- React Router
+- Axios
+- Tailwind CSS
+- Lucide React
 
-### `npm run build` fails to minify
+## Backend
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- ASP.NET Core Web API (.NET 8)
+- MongoDB
+
+## Development Tools
+
+- Swagger / OpenAPI
+- Git
+- GitHub
+- Visual Studio Code
+
+---
+
+# 📂 Project Structure
+
+```text
+API-Mock-Server
+│
+├── api-mock-server-ui
+│   ├── public
+│   ├── src
+│   │   ├── assets
+│   │   ├── components
+│   │   ├── hooks
+│   │   ├── layouts
+│   │   ├── pages
+│   │   ├── services
+│   │   ├── styles
+│   │   ├── utils
+│   │   ├── App.js
+│   │   └── index.js
+│   ├── package.json
+│   └── tailwind.config.js
+│
+├── ApiMockServer
+│   ├── Controllers
+│   ├── Models
+│   ├── DTOs
+│   ├── Services
+│   ├── Repositories
+│   ├── Data
+│   ├── Properties
+│   ├── Program.cs
+│   └── appsettings.json
+│
+└── README.md
+```
+
+---
+
+# 📋 Current Modules
+
+## Dashboard
+
+- Endpoint Statistics
+- Collection Statistics
+- Environment Statistics
+- Recent Endpoints
+- Quick Actions
+
+---
+
+## API Builder
+
+- Create Endpoint
+- Edit Endpoint
+- Delete Endpoint
+- Search Endpoints
+- Filter by HTTP Method
+
+---
+
+## Collections
+
+- Create Collection
+- Update Collection
+- Delete Collection
+- Search Collections
+
+---
+
+## Environments
+
+- Create Environment
+- Update Environment
+- Delete Environment
+- Activate Environment
+
+---
+
+# 🌐 REST APIs
+
+The following REST APIs provide CRUD operations for managing the mock server configuration during **Week 1**.
+
+## Mock Endpoints
+
+```http
+GET     /api/MockEndpoint
+POST    /api/MockEndpoint
+PUT     /api/MockEndpoint/{id}
+DELETE  /api/MockEndpoint/{id}
+```
+
+---
+
+## Collections
+
+```http
+GET     /api/Collection
+POST    /api/Collection
+PUT     /api/Collection/{id}
+DELETE  /api/Collection/{id}
+```
+
+---
+
+## Environments
+
+```http
+GET     /api/Environment
+POST    /api/Environment
+PUT     /api/Environment/{id}
+DELETE  /api/Environment/{id}
+```
+
+---
+
+# 🚀 Getting Started
+
+## Clone Repository
+
+```bash
+git clone https://github.com/<your-github-username>/API-Mock-Server.git
+```
+
+---
+
+# Frontend Setup
+
+```bash
+cd api-mock-server-ui
+
+npm install
+
+npm start
+```
+
+### Application URL
+
+```
+http://localhost:3000
+```
+
+---
+
+# Backend Setup
+
+```bash
+cd ApiMockServer
+
+dotnet restore
+
+dotnet run
+```
+
+### Swagger UI
+
+```
+http://localhost:5065/swagger
+```
+
+---
+
+# 📸 Screenshots
+
+Screenshots will be added after the completion of the Week 1 user interface.
+
+- Dashboard
+- API Builder
+- Collections
+- Environment Management
+- Swagger Documentation
+
+---
+
+# ✅ Week 1 Deliverables
+
+- Complete React frontend foundation
+- ASP.NET Core Web API
+- MongoDB integration
+- CRUD APIs for Mock Endpoints
+- CRUD APIs for Collections
+- CRUD APIs for Environments
+- Dashboard
+- API Builder
+- Collections Management
+- Environment Management
+- Responsive User Interface
+- Swagger Documentation
+- Initial Project Documentation
+
+---
+
+# 🚧 Development Roadmap
+
+The following features are planned according to the four-week implementation roadmap.
+
+## Week 2 – Dynamic Mock Engine
+
+- Dynamic Request Routing
+- Scenario Engine
+- Delay Simulation
+- Timeout Simulation
+- Random Failure Simulation
+- Custom Response Status Codes
+
+---
+
+## Week 3 – Developer Experience
+
+- Request History
+- Request Logging
+- Response Preview
+- Improved Validation
+- Enhanced User Interface
+- Environment Switching
+
+---
+
+## Week 4 – Advanced Features
+
+- OpenAPI Import
+- Response Templating
+- Rate Limiting Simulation
+- Malformed JSON Responses
+- Performance Testing
+- Final Documentation
+- Project Demonstration
+
+---
+
+# 🤝 Contributing
+
+This project is currently being developed as part of an internship program. Contributions and suggestions for improvement are always welcome.
+
+---
+
+# 👨‍💻 Author
+
+**Sasi Kaladhar**
+
+Developer – API Mock Server & Scenario Simulator
+
+---
+
+# 🙏 Acknowledgements
+
+This project is being developed as part of an internship program to gain hands-on experience in modern full-stack application development using **React**, **ASP.NET Core**, and **MongoDB**, while following industry-standard software engineering practices.
+
+---
+
+# 📄 License
+
+This project is intended for educational and internship purposes.

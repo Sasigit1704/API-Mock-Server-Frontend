@@ -1,83 +1,82 @@
-# API Mock Server & Scenario Simulator
+# API Mock Server & Scenario Simulator — Frontend
 
-> 🟢 **Project Status:** Week 1 Foundation Completed
+A React-based developer interface for configuring, organizing, and managing mock REST APIs.
 
-A React + ASP.NET Core based internal developer tool for creating, managing, and organizing configurable mock REST APIs. This project enables frontend developers and QA engineers to continue application development and testing without depending on backend API availability.
-
----
-
-# 📖 Project Overview
-
-The **API Mock Server & Scenario Simulator** is an internal developer tool designed to reduce backend dependencies during software development.
-
-It provides a visual interface to create, edit, organize, and manage configurable mock REST APIs while storing all endpoint definitions in MongoDB. As the project evolves, these mock APIs will be capable of simulating real-world backend behavior such as success responses, server errors, delays, timeouts, malformed JSON responses, and other testing scenarios without requiring changes to application code.
-
-This repository currently contains the **Week 1 – Foundation** implementation of the project.
+The frontend provides an intuitive user experience for creating mock endpoints, organizing them into collections, managing environments, and interacting with the backend mock server. It is designed for frontend developers and QA engineers who need a visual interface to define and manage mock APIs during application development and testing.
 
 ---
 
-# ❗ Problem Statement
+# Overview
 
-Frontend developers and QA engineers often depend on backend API availability before they can begin development and testing. This dependency delays feature implementation, integration, and quality assurance.
+The **API Mock Server & Scenario Simulator** is a full-stack developer tool that enables teams to continue frontend development and API testing without waiting for backend services.
 
-The **API Mock Server & Scenario Simulator** addresses this challenge by allowing teams to configure and manage mock REST APIs that behave like real backend services, enabling parallel development and improving overall productivity.
+This frontend application communicates with an ASP.NET Core Web API backend and provides a clean, responsive interface for managing mock API configurations stored in MongoDB.
 
----
-
-# 🎯 Project Goals
-
-- Create configurable mock REST APIs dynamically.
-- Provide an intuitive user interface for API management.
-- Organize APIs into reusable collections.
-- Support multiple environments.
-- Simulate real-world API behaviors.
-- Reduce dependency on backend availability.
-- Improve collaboration between frontend, backend, and QA teams.
+As the project evolves, the application will support advanced mock scenarios such as configurable delays, timeout simulation, request logging, OpenAPI import, response templating, and environment switching.
 
 ---
 
-# ✨ Week 1 Features
+# Features
 
-## Frontend (React)
+## Currently Available
 
-- Dashboard
-- API Builder
-- Collections Management
-- Environment Management
-- Responsive Dashboard Layout
-- Sidebar Navigation
-- Top Navigation Bar
-- Search & Filtering
-- Modern Enterprise User Interface
+### Dashboard
+
+- View project statistics
+- Quick access to major modules
+- Summary cards
+- Recent endpoint overview
+
+### API Builder
+
+- Create mock endpoints
+- Edit endpoint configuration
+- Delete endpoints
+- Search endpoints
+- Filter endpoints by HTTP method
+
+### Collections Management
+
+- Create collections
+- Update collections
+- Delete collections
+- Organize mock endpoints
+
+### Environment Management
+
+- Create environments
+- Edit environments
+- Delete environments
+- Activate environments
+
+### User Experience
+
+- Responsive layout
+- Sidebar navigation
+- Top navigation bar
+- Search functionality
+- Reusable UI components
+- Modern enterprise-style interface
 
 ---
 
-## Backend (ASP.NET Core Web API)
+## Planned Features
 
-- CRUD APIs for Mock Endpoints
-- CRUD APIs for Collections
-- CRUD APIs for Environments
-- MongoDB Integration
-- REST API Architecture
-- Swagger API Documentation
-- Request Validation
-- Layered Architecture
+The frontend is designed to support additional capabilities including:
 
----
-
-## Database
-
-### MongoDB Collections
-
-- MockEndpoint
-- Collection
-- Environment
-
-> **Note:** Additional collections such as **MockScenario** and **RequestLog** will be introduced in future development phases.
+- Request History
+- Response Preview
+- OpenAPI Import
+- Environment Switching
+- Advanced Form Validation
+- Toast Notifications
+- Response Templates
+- Advanced Search & Filtering
+- Enhanced Developer Experience
 
 ---
 
-# 🛠 Technology Stack
+# Technology Stack
 
 ## Frontend
 
@@ -85,270 +84,186 @@ The **API Mock Server & Scenario Simulator** addresses this challenge by allowin
 - React Router
 - Axios
 - Tailwind CSS
-- Lucide React
-
-## Backend
-
-- ASP.NET Core Web API (.NET 8)
-- MongoDB
 
 ## Development Tools
 
-- Swagger / OpenAPI
 - Git
 - GitHub
 - Visual Studio Code
 
 ---
 
-# 📂 Project Structure
+# System Architecture
+
+The frontend is part of a layered architecture consisting of a React presentation layer, an ASP.NET Core backend, and MongoDB.
+
+![System Architecture](docs/01-system-architecture.png)
+
+Additional technical diagrams are available in the `docs` directory.
+
+---
+
+# Project Structure
 
 ```text
-API-Mock-Server
+api-mock-server-frontend
 │
-├── api-mock-server-ui
-│   ├── public
-│   ├── src
-│   │   ├── assets
-│   │   ├── components
-│   │   ├── hooks
-│   │   ├── layouts
-│   │   ├── pages
-│   │   ├── services
-│   │   ├── styles
-│   │   ├── utils
-│   │   ├── App.js
-│   │   └── index.js
-│   ├── package.json
-│   └── tailwind.config.js
+├── public
 │
-├── ApiMockServer
-│   ├── Controllers
-│   ├── Models
-│   ├── DTOs
-│   ├── Services
-│   ├── Repositories
-│   ├── Data
-│   ├── Properties
-│   ├── Program.cs
-│   └── appsettings.json
+├── src
+│   ├── assets
+│   ├── components
+│   │   ├── common
+│   │   ├── layout
+│   │   └── ui
+│   │
+│   ├── hooks
+│   ├── layouts
+│   ├── pages
+│   │   ├── Dashboard
+│   │   ├── ApiBuilder
+│   │   ├── Collections
+│   │   └── Environments
+│   │
+│   ├── services
+│   ├── styles
+│   ├── utils
+│   ├── App.js
+│   └── index.js
 │
+├── docs
+├── package.json
 └── README.md
 ```
 
 ---
 
-# 📋 Current Modules
-
-## Dashboard
-
-- Endpoint Statistics
-- Collection Statistics
-- Environment Statistics
-- Recent Endpoints
-- Quick Actions
-
----
-
-## API Builder
-
-- Create Endpoint
-- Edit Endpoint
-- Delete Endpoint
-- Search Endpoints
-- Filter by HTTP Method
-
----
-
-## Collections
-
-- Create Collection
-- Update Collection
-- Delete Collection
-- Search Collections
-
----
-
-## Environments
-
-- Create Environment
-- Update Environment
-- Delete Environment
-- Activate Environment
-
----
-
-# 🌐 REST APIs
-
-The following REST APIs provide CRUD operations for managing the mock server configuration during **Week 1**.
-
-## Mock Endpoints
-
-```http
-GET     /api/MockEndpoint
-POST    /api/MockEndpoint
-PUT     /api/MockEndpoint/{id}
-DELETE  /api/MockEndpoint/{id}
-```
-
----
-
-## Collections
-
-```http
-GET     /api/Collection
-POST    /api/Collection
-PUT     /api/Collection/{id}
-DELETE  /api/Collection/{id}
-```
-
----
-
-## Environments
-
-```http
-GET     /api/Environment
-POST    /api/Environment
-PUT     /api/Environment/{id}
-DELETE  /api/Environment/{id}
-```
-
----
-
-# 🚀 Getting Started
+# Installation
 
 ## Clone Repository
 
 ```bash
-git clone https://github.com/<your-github-username>/API-Mock-Server.git
+git clone <frontend-repository-url>
 ```
 
----
-
-# Frontend Setup
+## Install Dependencies
 
 ```bash
-cd api-mock-server-ui
-
 npm install
+```
 
+## Start Development Server
+
+```bash
 npm start
 ```
 
-### Application URL
+Application URL
 
 ```
 http://localhost:3000
 ```
 
----
-
-# Backend Setup
-
-```bash
-cd ApiMockServer
-
-dotnet restore
-
-dotnet run
-```
-
-### Swagger UI
-
-```
-http://localhost:5065/swagger
-```
+> Ensure the backend API is running before using the application.
 
 ---
 
-# 📸 Screenshots
+# Backend Integration
 
-Screenshots will be added after the completion of the Week 1 user interface.
+The frontend communicates with the ASP.NET Core Web API using REST APIs over HTTP/JSON.
 
-- Dashboard
-- API Builder
-- Collections
-- Environment Management
-- Swagger Documentation
+Current modules interact with backend APIs for:
 
----
-
-# ✅ Week 1 Deliverables
-
-- Complete React frontend foundation
-- ASP.NET Core Web API
-- MongoDB integration
-- CRUD APIs for Mock Endpoints
-- CRUD APIs for Collections
-- CRUD APIs for Environments
-- Dashboard
-- API Builder
-- Collections Management
-- Environment Management
-- Responsive User Interface
-- Swagger Documentation
-- Initial Project Documentation
+| Module | Operations |
+|---------|------------|
+| Mock Endpoints | Create, Read, Update, Delete |
+| Collections | Create, Read, Update, Delete |
+| Environments | Create, Read, Update, Delete |
 
 ---
 
-# 🚧 Development Roadmap
+# Screenshots
 
-The following features are planned according to the four-week implementation roadmap.
+## Dashboard
 
-## Week 2 – Dynamic Mock Engine
+![Dashboard](docs/screenshots/dashboard.png)
 
-- Dynamic Request Routing
-- Scenario Engine
-- Delay Simulation
-- Timeout Simulation
-- Random Failure Simulation
-- Custom Response Status Codes
+Displays project statistics, quick actions, and recently created endpoints.
 
 ---
 
-## Week 3 – Developer Experience
+## API Builder
 
-- Request History
-- Request Logging
-- Response Preview
-- Improved Validation
-- Enhanced User Interface
-- Environment Switching
+![API Builder](docs/screenshots/api-builder.png)
+
+Create, edit, search, and manage mock endpoints.
 
 ---
 
-## Week 4 – Advanced Features
+## Collections
 
-- OpenAPI Import
-- Response Templating
-- Rate Limiting Simulation
-- Malformed JSON Responses
-- Performance Testing
-- Final Documentation
-- Project Demonstration
+![Collections](docs/screenshots/collections.png)
+
+Organize mock endpoints into reusable collections.
 
 ---
 
-# 🤝 Contributing
+## Environment Management
 
-This project is currently being developed as part of an internship program. Contributions and suggestions for improvement are always welcome.
+![Environment Management](docs/screenshots/environments.png)
+
+Manage application environments used by mock APIs.
 
 ---
 
-# 👨‍💻 Author
+# Documentation
+
+The project documentation includes the following architecture and design diagrams.
+
+| Document | Description |
+|----------|-------------|
+| `docs/01-system-architecture.png` | High-level system architecture |
+| `docs/02-foundation-architecture.png` | Current implementation overview |
+| `docs/03-api-request-lifecycle.png` | API request processing flow |
+| `docs/04-database-design.png` | MongoDB collection design |
+| `docs/05-frontend-component-architecture.png` | Frontend application architecture |
+| `docs/06-backend-component-architecture.png` | Backend application architecture |
+
+---
+
+# Roadmap
+
+The frontend will continue to evolve with additional developer-focused capabilities.
+
+- [ ] Request History
+- [ ] Response Preview
+- [ ] OpenAPI Import
+- [ ] Environment Switching
+- [ ] Advanced Validation
+- [ ] Enhanced Search & Filtering
+- [ ] Improved User Experience
+- [ ] Response Template Editor
+
+---
+
+# Contributing
+
+Contributions are welcome.
+
+Please create a feature branch, follow the existing project structure, and ensure changes are tested before submitting a pull request.
+
+---
+
+# Author
 
 **Sasi Kaladhar**
 
-Developer – API Mock Server & Scenario Simulator
+Developer
+
+API Mock Server & Scenario Simulator
 
 ---
 
-# 🙏 Acknowledgements
-
-This project is being developed as part of an internship program to gain hands-on experience in modern full-stack application development using **React**, **ASP.NET Core**, and **MongoDB**, while following industry-standard software engineering practices.
-
----
-
-# 📄 License
+# License
 
 This project is intended for educational and internship purposes.

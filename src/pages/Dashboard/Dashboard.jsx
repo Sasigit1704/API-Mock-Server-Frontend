@@ -37,7 +37,7 @@ function Dashboard() {
       setCollectionCount(collections.length);
       setEnvironmentCount(environments.length);
 
-      setRecentEndpoints(endpoints.slice(0, 5));
+      setRecentEndpoints(endpoints.reverse().slice(0, 5));
       setActiveEnvironment(environments.find((e) => e.isActive));
     } catch (error) {
       console.error("Failed to load dashboard", error);

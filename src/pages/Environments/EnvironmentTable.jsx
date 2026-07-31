@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Star } from "lucide-react";
 
 import Table from "../../components/ui/Table";
 import Badge from "../../components/ui/Badge";
@@ -8,6 +8,7 @@ function EnvironmentTable({
   environments,
   onEdit,
   onDelete,
+  onActivate,
   onCreate,
 }) {
   if (environments.length === 0) {
@@ -33,8 +34,12 @@ function EnvironmentTable({
     >
       {environments.map((environment) => (
         <tr
-          key={environment.id}
-          className="border-t border-slate-200 transition-colors hover:bg-slate-50"
+            key={environment.id}
+            className={`border-t border-slate-200 transition-colors hover:bg-slate-50 ${
+                environment.isActive
+                    ? "bg-blue-50"
+                    : ""
+            }`}
         >
           {/* Environment */}
 
@@ -101,6 +106,32 @@ function EnvironmentTable({
                 <Pencil
                   size={18}
                   className="text-blue-600"
+                />
+              </button>
+
+              {/* Activate */}
+
+              <button
+                  disabled={environment.isActive}
+                  onClick={() => onActivate(environment)}
+                  className={`rounded-full p-2 transition ${
+                      environment.isActive
+                          ? "cursor-not-allowed opacity-40"
+                          : "hover:bg-yellow-100"
+                  }`}
+                  title={
+                      environment.isActive
+                          ? "Already Active"
+                          : "Set Active"
+                  }
+              >
+                <Star
+                  size={18}
+                  className={
+                    environment.isActive
+                      ? "fill-yellow-400 text-yellow-500"
+                      : "text-yellow-500"
+                  }
                 />
               </button>
 

@@ -31,14 +31,14 @@ const activePages = [
     path: "/environment",
     icon: Globe,
   },
+  {
+    title: "Scenarios",
+    path: "/scenarios",
+    icon: Workflow,
+  }
 ];
 
 const upcomingPages = [
-  {
-    title: "Scenarios",
-    //week: "Week 2",
-    icon: Workflow,
-  },
   {
     title: "Request History",
     //week: "Week 3",

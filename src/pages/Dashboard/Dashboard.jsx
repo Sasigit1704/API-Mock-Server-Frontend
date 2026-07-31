@@ -3,11 +3,13 @@ import {
   FolderKanban,
   Globe,
   ArrowRight,
+  Workflow,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getMockEndpoints } from "../../services/mockEndpointService";
 import { getCollections } from "../../services/collectionService";
 import { getEnvironments } from "../../services/environmentService";
+import { getMockScenarios } from "../../services/mockScenarioService";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Badge from "../../components/ui/Badge";
@@ -21,6 +23,7 @@ function Dashboard() {
   const [collectionCount, setCollectionCount] = useState(0);
   const [environmentCount, setEnvironmentCount] = useState(0);
   const [activeEnvironment, setActiveEnvironment] = useState(null);
+  const [scenarioCount, setScenarioCount] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,12 +35,14 @@ function Dashboard() {
       const endpoints = await getMockEndpoints();
       const collections = await getCollections();
       const environments = await getEnvironments();
+      const scenarios = await getMockScenarios();
 
       setEndpointCount(endpoints.length);
       setCollectionCount(collections.length);
       setEnvironmentCount(environments.length);
+      setScenarioCount(scenarios.length);
 
-      setRecentEndpoints(endpoints.reverse().slice(0, 5));
+      setRecentEndpoints(endpoints.reverse().slice(0, 7));
       setActiveEnvironment(environments.find((e) => e.isActive));
     } catch (error) {
       console.error("Failed to load dashboard", error);
@@ -59,6 +64,11 @@ function Dashboard() {
       title: "Environments",
       value: environmentCount,
       icon: Globe,
+    },
+    {
+      title: "Scenarios",
+      value: scenarioCount,
+      icon: Workflow,
     }
   ];
 
@@ -76,7 +86,7 @@ function Dashboard() {
       </div>
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {stats.map((item) => {
           const Icon = item.icon;
           return (

@@ -1,7 +1,8 @@
-import { Pencil, Trash2 } from "lucide-react";
-
+import { Pencil, Trash2, Workflow } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Table from "../../components/ui/Table";
 import Badge from "../../components/ui/Badge";
+import Button from "../../components/ui/Button";
 import EmptyState from "../../components/ui/EmptyState";
 
 function EndpointTable({
@@ -12,6 +13,7 @@ function EndpointTable({
   onCreate,
   selectedEndpointId,
 }) {
+  const navigate = useNavigate();
   if (endpoints.length === 0) {
     return (
       <EmptyState
@@ -22,6 +24,7 @@ function EndpointTable({
       />
     );
   }
+  
 
   return (
     <Table
@@ -36,8 +39,8 @@ function EndpointTable({
       {endpoints.map((endpoint) => (
         <tr
           key={endpoint.id}
-          className={`"border-t border-slate-200 transition-colors hover:bg-slate-50"
-            ${ endpoint.id === selectedEndpointId ? "bg-blue-50 ring-2 ring-blue-500" : "" }`}
+          className={`"border-t border-slate-200 transition-colors hover:bg-slate-50
+            ${ endpoint.id === selectedEndpointId ? "bg-blue-50" : "" }`}
         >
           {/* Method */}
 
@@ -99,7 +102,21 @@ function EndpointTable({
                   className="text-blue-600"
                 />
               </button>
-
+              <Button
+                onClick={() =>
+                    navigate(`/scenarios?endpoint=${endpoint.id}`)
+                }
+                className="rounded-full p-2 transition hover:bg-violet-100"
+                title="Manage Scenarios"
+                size="sm"
+                variant="outline"
+              >
+                <Workflow
+                    size={18}
+                    className="text-violet-600"
+                    
+                />Manage Scenarios
+              </Button>
               <button
                 onClick={() => onDelete(endpoint)}
                 className="rounded-full p-2 transition hover:bg-red-100"

@@ -4,6 +4,7 @@ import {
   getEnvironments,
   createEnvironment,
   updateEnvironment,
+  patchEnvironment,
   deleteEnvironment,
 } from "../../services/environmentService";
 
@@ -68,14 +69,21 @@ function Environments() {
     }
   };
 
+  const handleActivate = async (environment) => {
+    if (environment.isActive) return;
+    try {
+        await patchEnvironment(environment.id, {isActive: true,});
+        await loadEnvironments();
+    } catch (error) {
+        console.error(error);
+      }
+  };
+
   const handleDelete = async () => {
     if (!deleteEnvironmentItem) return;
-
     try {
       await deleteEnvironment(deleteEnvironmentItem.id);
-
       await loadEnvironments();
-
       setDeleteEnvironmentItem(null);
     } catch (error) {
       console.error(error);
@@ -157,12 +165,8 @@ function Environments() {
 
             <p className="mt-2 text-sm leading-6 text-blue-700">
 
-              The active environment serves as the
-              target host for API routing simulations.
-              Only one environment can be active at a
-              time. Setting a new environment as active
-              will automatically deactivate the previous
-              one.
+              Only one environment can be active at a time.
+              Activating another environment automatically deactivates the current one.
 
             </p>
 
@@ -194,6 +198,7 @@ function Environments() {
         onDelete={(environment) =>
           setDeleteEnvironmentItem(environment)
         }
+        onActivate={handleActivate}
         onCreate={() => {
           setEditingEnvironment(null);
           setShowForm(true);

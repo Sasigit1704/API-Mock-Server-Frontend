@@ -3,7 +3,8 @@ import MainLayout from "./components/layout/MainLayout";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import ApiBuilder from "./pages/ApiBuilder/ApiBuilder";
 import Collections from "./pages/Collections/Collections";
-import Environments from "./pages/Environments/Environments"
+import Environments from "./pages/Environments/Environments";
+import Scenarios from "./pages/Scenarios/Scenarios";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/builder" element={<ApiBuilder />} />
           <Route path="/collections" element={<Collections />} />
           <Route path="/environment" element={<Environments />} />
+          <Route path="/scenarios" element={<Scenarios />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -186,17 +186,41 @@ function Scenarios() {
       {/* Header */}
 
       {endpoint && (
-          <div className="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex items-center gap-3">
-              <Badge variant={endpoint.method.toLowerCase()}>
-                {endpoint.method}
-              </Badge>
+        <div className="rounded-2xl border border-blue-200 bg-blue-50 p-5">
+          <div className="flex items-center justify-between">
 
-              <span className="font-mono text-lg text-slate-700">
-                {endpoint.path}
-              </span>
+            <div>
+              <p className="text-sm font-medium text-blue-700">
+                Current Endpoint
+              </p>
+
+              <div className="mt-2 flex items-center gap-3">
+
+                <Badge variant={endpoint.method.toLowerCase()}>
+                  {endpoint.method}
+                </Badge>
+
+                <span className="font-mono text-lg text-slate-800">
+                  {endpoint.path}
+                </span>
+
+              </div>
             </div>
+
+            <div className="text-right">
+
+              <p className="text-sm text-slate-500">
+                Default Status
+              </p>
+
+              <p className="mt-1 text-2xl font-bold text-slate-900">
+                {endpoint.statusCode}
+              </p>
+
+            </div>
+
           </div>
+        </div>
       )}
 
       <div className="flex items-start justify-between rounded-2xl bg-slate-100 p-8 shadow-sm">

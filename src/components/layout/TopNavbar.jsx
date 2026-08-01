@@ -1,23 +1,10 @@
 import { Search, Bell } from "lucide-react";
-import { Menu } from "lucide-react";
 
-function TopNavbar({
-  toggleSidebar,
-}) {
+function TopNavbar() {
 
   return (
     <header className="h-[72px] bg-white border-b flex items-center shadow-sm justify-between px-8">
       <div className="flex items-center gap-4">
-        <button
-          onClick={toggleSidebar}
-          className="
-          rounded-lg
-          p-2
-          hover:bg-slate-100
-          transition"
-        >
-          <Menu size={22}/>
-        </button>
         <div className="relative">
         <Search
           size={18}
@@ -28,17 +15,19 @@ function TopNavbar({
           placeholder="Search is in development"
           disabled
           className="
-            width: 420px
-            height: 48px
-            shadow-sm
-            pl-11
-            pr-4
-            py-2.5
-            border
-            rounded-xl
-            focus:outline-none
-            focus:ring-2
-            focus:ring-blue-500"
+          w-[320px]
+          md:w-[420px]
+          h-12
+          shadow-sm
+          pl-11
+          pr-4
+          py-2.5
+          border
+          rounded-xl
+          focus:outline-none
+          focus:ring-2
+          focus:ring-blue-500
+          "
         />
       </div>
       </div>

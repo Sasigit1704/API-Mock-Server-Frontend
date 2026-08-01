@@ -8,6 +8,8 @@ import {
   History,
   FileCode2,
   Clock3,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 const activePages = [
@@ -51,10 +53,11 @@ const upcomingPages = [
   },
 ];
 
-function Sidebar({ isCollapsed }) {
+function Sidebar({ isCollapsed, onToggle }) {
   return (
     <aside
       className={`
+        relative
         flex
         flex-col
         bg-white
@@ -65,6 +68,34 @@ function Sidebar({ isCollapsed }) {
         ${isCollapsed ? "w-20" : "w-72"}
       `}
     >
+    
+    <button
+      onClick={onToggle}
+      className="
+        absolute
+        top-8
+        -right-4
+        z-50
+        h-8
+        w-8
+        rounded-full
+        border
+        border-slate-200
+        bg-white
+        shadow-md
+        flex
+        items-center
+        justify-center
+        hover:bg-slate-100
+        transition
+      "
+    >
+      {isCollapsed ? (
+        <ChevronRight size={18} />
+      ) : (
+        <ChevronLeft size={18} />
+      )}
+    </button>
 
       {/* Logo */}
       {isCollapsed ? (

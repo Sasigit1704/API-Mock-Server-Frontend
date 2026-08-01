@@ -31,7 +31,9 @@ function ApiBuilder() {
   const [deleteEndpoint, setDeleteEndpoint] = useState(null);
 
   const [searchParams] = useSearchParams();
-  const selectedId = searchParams.get("endpoint");
+  const expandId = searchParams.get("expand");
+
+  const [expandedEndpointId, setExpandedEndpointId] = useState(null);
 
   useEffect(() => {
     loadEndpoints();
@@ -41,6 +43,21 @@ function ApiBuilder() {
       setShowForm(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (expandId && endpoints.length > 0) {
+      setExpandedEndpointId(expandId);
+
+      const element = document.getElementById(`endpoint-${expandId}`);
+
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    }
+  }, [expandId, endpoints]);
 
   const loadEndpoints = async () => {
     setLoading(true);
@@ -116,6 +133,12 @@ function ApiBuilder() {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const toggleExpand = (id) => {
+    setExpandedEndpointId((prev) =>
+      prev === id ? null : id
+    );
   };
 
   const filteredEndpoints = endpoints.filter((endpoint) => {
@@ -197,6 +220,8 @@ function ApiBuilder() {
 
       <EndpointTable
         endpoints={filteredEndpoints}
+        expandedEndpointId={expandedEndpointId}
+        onToggleExpand={toggleExpand}
         collectionMap={collectionMap}
         onEdit={(endpoint) => {
           setEditingEndpoint(endpoint);
@@ -207,7 +232,6 @@ function ApiBuilder() {
           setEditingEndpoint(null);
           setShowForm(true);
         }}
-        selectedEndpointId={selectedId}
       />
 
       {/* Form */}

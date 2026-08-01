@@ -130,7 +130,7 @@ function Dashboard() {
               recentEndpoints.map((endpoint) => (
                 <Link
                   key={endpoint.id}
-                  to={`/builder?endpoint=${endpoint.id}`}
+                  to={`/builder?expand=${endpoint.id}`}
                   className="block"
                 >
                   <div

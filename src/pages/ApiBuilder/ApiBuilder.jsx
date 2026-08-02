@@ -13,7 +13,7 @@ import EndpointToolbar from "./EndpointToolbar";
 import EndpointTable from "./EndpointTable";
 import Modal from "../../components/ui/Modal";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useLocation } from "react-router-dom";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 
 function ApiBuilder() {
@@ -42,7 +42,7 @@ function ApiBuilder() {
       setEditingEndpoint(null);
       setShowForm(true);
     }
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     if (expandId && endpoints.length > 0) {
@@ -165,6 +165,22 @@ function ApiBuilder() {
     return acc;
   }, {});
 
+  const location = useLocation();
+
+  const [highlightedId, setHighlightedId] = useState(
+    location.state?.highlightEndpointId
+  );
+
+  useEffect(() => {
+    if (!highlightedId) return;
+
+    const timer = setTimeout(() => {
+      setHighlightedId(null);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [highlightedId]);
+
   if (loading) {
     return <LoadingSpinner/>
   }
@@ -220,6 +236,7 @@ function ApiBuilder() {
 
       <EndpointTable
         endpoints={filteredEndpoints}
+        highlightedId={highlightedId}
         expandedEndpointId={expandedEndpointId}
         onToggleExpand={toggleExpand}
         collectionMap={collectionMap}

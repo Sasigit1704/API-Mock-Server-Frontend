@@ -1,14 +1,17 @@
+import { useRef } from "react";
 import { Pencil, Trash2 } from "lucide-react";
-
 import Table from "../../components/ui/Table";
 import EmptyState from "../../components/ui/EmptyState";
 
 function CollectionTable({
   collections,
+  highlightedId,
   onEdit,
   onDelete,
   onCreate,
 }) {
+
+  const rowRefs = useRef({});
 
   if (collections.length === 0) {
     return (
@@ -33,8 +36,17 @@ function CollectionTable({
         {collections.map((collection) => (
 
           <tr
+            ref={(el)=>{
+              if(el){
+                rowRefs.current[collection.id]=el;
+              }
+            }}
             key={collection.id}
-            className="border-t hover:bg-slate-50"
+            className={`border-t transition-all duration-500 hover:bg-slate-50
+              ${
+                highlightedId===collection.id ? "bg-blue-100 ring-2 ring-blue-300" :""
+              }
+            `}
           >
 
             <td className="px-6 py-4 font-medium">

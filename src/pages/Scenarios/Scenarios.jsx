@@ -1,6 +1,6 @@
 import { Workflow } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { getMockEndpointById } from "../../services/mockEndpointService";
 import {
   getScenariosByEndpoint,
@@ -40,6 +40,7 @@ function Scenarios() {
   const [editingScenario, setEditingScenario] = useState(null);
   const [deleteScenario, setDeleteScenario] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const loadEndpoint = useCallback(async () => {
     const data = await getMockEndpointById(endpointId);
@@ -138,6 +139,20 @@ function Scenarios() {
 
     return matchesSearch && matchesStatus;
   });
+
+  const [highlightedId, setHighlightedId] = useState(
+    location.state?.highlightScenarioId
+  );
+
+  useEffect(() => {
+    if (!highlightedId) return;
+
+    const timer = setTimeout(() => {
+      setHighlightedId(null);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [highlightedId]);
 
   if (loading) {
     return <LoadingSpinner />;
@@ -267,6 +282,7 @@ function Scenarios() {
 
       <ScenarioTable
         scenarios={filteredScenarios}
+        highlightedId={highlightedId}
         onEdit={(scenario) => {
           setEditingScenario(scenario);
           setShowForm(true);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-
+import {useLocation} from "react-router-dom";
 import {
   getEnvironments,
   createEnvironment,
@@ -100,7 +100,21 @@ function Environments() {
           .toLowerCase()
           .includes(search.toLowerCase())
       );
-    });
+    }
+  );
+
+  const location=useLocation();
+
+  const [highlightedId,setHighlightedId]=useState(
+    location.state?.highlightEnvironmentId
+  );
+  useEffect(()=>{
+    if(!highlightedId)return;
+    const timer=setTimeout(()=>{
+      setHighlightedId(null);
+    },3000);
+    return ()=>clearTimeout(timer);
+  },[highlightedId]);
 
   if (loading) {
     return <LoadingSpinner />;
@@ -191,6 +205,7 @@ function Environments() {
 
       <EnvironmentTable
         environments={filteredEnvironments}
+        highlightedId={highlightedId}
         onEdit={(environment) => {
           setEditingEnvironment(environment);
           setShowForm(true);

@@ -1,16 +1,20 @@
+import { useRef } from "react";
 import { Pencil, Trash2, Star } from "lucide-react";
-
 import Table from "../../components/ui/Table";
 import Badge from "../../components/ui/Badge";
 import EmptyState from "../../components/ui/EmptyState";
 
 function EnvironmentTable({
   environments,
+  highlightedId,
   onEdit,
   onDelete,
   onActivate,
   onCreate,
 }) {
+
+  const rowRefs= useRef({});
+
   if (environments.length === 0) {
     return (
       <EmptyState
@@ -34,12 +38,20 @@ function EnvironmentTable({
     >
       {environments.map((environment) => (
         <tr
+          ref={(el)=>{
+            if(el){
+              rowRefs.current[environment.id]=el;
+            }
+          }}
             key={environment.id}
-            className={`border-t border-slate-200 transition-colors hover:bg-slate-50 ${
-                environment.isActive
-                    ? "bg-blue-50"
-                    : ""
-            }`}
+            className={`border-t border-slate-200 transition-colors hover:bg-slate-50
+              ${
+                environment.isActive ? "bg-blue-50" : ""
+              }
+              ${
+                highlightedId===environment.id ?"bg-blue-100 ring-2 ring-blue-300" :""
+              }
+            `}
         >
           {/* Environment */}
 

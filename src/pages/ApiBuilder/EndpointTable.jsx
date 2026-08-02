@@ -5,7 +5,7 @@ import {
   Trash2,
   Workflow,
 } from "lucide-react";
-
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Table from "../../components/ui/Table";
 import Badge from "../../components/ui/Badge";
@@ -14,6 +14,7 @@ import EmptyState from "../../components/ui/EmptyState";
 
 function EndpointTable({
   endpoints,
+  highlightedId,
   collectionMap,
   onEdit,
   onDelete,
@@ -22,6 +23,14 @@ function EndpointTable({
   onToggleExpand,
 }) {
   const navigate = useNavigate();
+  const rowRefs = useRef({});
+  useEffect(() => {
+      if (!highlightedId) return;
+      rowRefs.current[highlightedId]?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+      });
+  }, [highlightedId]);
 
   if (endpoints.length === 0) {
     return (
@@ -38,6 +47,7 @@ function EndpointTable({
     <Table
       headers={[
         "",
+        "Name",
         "Method",
         "Endpoint",
         "Status",
@@ -50,12 +60,21 @@ function EndpointTable({
           {/* Main Row */}
 
           <tr
+            ref={(el)=>{
+              if(el){
+                rowRefs.current[endpoint.id]=el;
+              }
+            }}
             key={endpoint.id}
             onClick={() => onToggleExpand(endpoint.id)}
-            className={`cursor-pointer border-t transition-all duration-300
+            className={`cursor-pointer border-t transition-all duration-500 hover:bg-slate-50
               ${
                 expandedEndpointId === endpoint.id ? "bg-blue-50 ring-2 ring-blue-300" : "hover:bg-slate-50"
-              }`}
+              }
+              ${
+                highlightedId===endpoint.id ? "bg-blue-100 ring-2 ring-blue-300" : ""
+              }
+            `}
             id={`endpoint-${endpoint.id}`}
           >
    
@@ -68,6 +87,13 @@ function EndpointTable({
                 <ChevronRight size={18} />
               )}
 
+            </td>
+
+
+            {/* Name */}
+
+            <td className="px-8 py-5">
+              {endpoint.name}
             </td>
 
             {/* Method */}

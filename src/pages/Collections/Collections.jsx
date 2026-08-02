@@ -5,7 +5,7 @@ import CollectionTable from "./CollectionTable";
 import CollectionForm from "../../components/forms/CollectionForm";
 import Modal from "../../components/ui/Modal";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useLocation } from "react-router-dom";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 
 function Collections() {
@@ -17,6 +17,16 @@ function Collections() {
     const [editingCollection, setEditingCollection] = useState(null);
     const [deleteCollectionItem, setDeleteCollectionItem] = useState(null);
     const [searchParams] = useSearchParams();
+    const location=useLocation();
+    const [highlightedId,setHighlightedId]=useState(location.state?.highlightCollectionId);
+
+    useEffect(()=>{
+        if(!highlightedId)return;
+        const timer=setTimeout(()=>{
+            setHighlightedId(null);
+        },3000);
+        return ()=>clearTimeout(timer);
+    },[highlightedId]);
 
     useEffect(() => {
         loadCollections();
@@ -24,7 +34,7 @@ function Collections() {
             setEditingCollection(null);
             setShowForm(true);
         }
-    }, []);
+    }, [searchParams]);
 
     const loadCollections = async () => {
         setLoading(true);
@@ -128,6 +138,7 @@ function Collections() {
 
             <CollectionTable
                 collections={filteredCollections}
+                highlightedId={highlightedId}
                 onEdit={(collection) => {
                     setEditingCollection(collection);
                     setShowForm(true);

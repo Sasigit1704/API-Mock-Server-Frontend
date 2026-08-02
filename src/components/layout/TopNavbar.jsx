@@ -1,35 +1,12 @@
-import { Search, Bell } from "lucide-react";
+//import { Search, Bell } from "lucide-react";
+import GlobalSearch from "../search/GlobalSearch";
 
 function TopNavbar() {
 
   return (
     <header className="h-[72px] bg-white border-b flex items-center shadow-sm justify-between px-8">
       <div className="flex items-center gap-4">
-        <div className="relative">
-        <Search
-          size={18}
-          className="absolute left-4 top-3.5 text-slate-400"
-        />
-        <input
-          type="text"
-          placeholder="Search is in development"
-          disabled
-          className="
-          w-[320px]
-          md:w-[420px]
-          h-12
-          shadow-sm
-          pl-11
-          pr-4
-          py-2.5
-          border
-          rounded-xl
-          focus:outline-none
-          focus:ring-2
-          focus:ring-blue-500
-          "
-        />
-      </div>
+        <GlobalSearch/>
       </div>
 
       <div className="flex items-center gap-6">

@@ -1,18 +1,18 @@
 # API Mock Server & Scenario Simulator — Frontend
 
-A React-based developer interface for configuring, organizing, and managing mock REST APIs.
+A modern React-based developer interface for designing, configuring, organizing, and testing configurable mock REST APIs.
 
-The frontend provides an intuitive user experience for creating mock endpoints, organizing them into collections, managing environments, and interacting with the backend mock server. It is designed for frontend developers and QA engineers who need a visual interface to define and manage mock APIs during application development and testing.
+The frontend provides an intuitive enterprise-style dashboard for managing mock endpoints, scenarios, collections, and environments while interacting with the ASP.NET Core backend. It enables frontend developers and QA engineers to simulate backend behavior without depending on live services.
 
 ---
 
 # Overview
 
-The **API Mock Server & Scenario Simulator** is a full-stack developer tool that enables teams to continue frontend development and API testing without waiting for backend services.
+The **API Mock Server & Scenario Simulator** is a full-stack developer tool that allows teams to continue frontend development, integration, and API testing even when backend services are unavailable or under development.
 
-This frontend application communicates with an ASP.NET Core Web API backend and provides a clean, responsive interface for managing mock API configurations stored in MongoDB.
+This frontend application communicates with the ASP.NET Core Web API backend and provides an interactive interface for creating and managing mock APIs stored in MongoDB.
 
-As the project evolves, the application will support advanced mock scenarios such as configurable delays, timeout simulation, request logging, OpenAPI import, response templating, and environment switching.
+The application currently supports complete management of mock endpoints, collections, environments, and mock scenarios while offering dynamic search, enterprise dashboard navigation, and API simulation configuration.
 
 ---
 
@@ -22,25 +22,53 @@ As the project evolves, the application will support advanced mock scenarios suc
 
 ### Dashboard
 
-- View project statistics
-- Quick access to major modules
-- Summary cards
-- Recent endpoint overview
+- Interactive project dashboard
+- Statistics cards
+- Endpoint summary
+- Collection summary
+- Environment summary
+- Scenario summary
+- Quick navigation
+
+---
 
 ### API Builder
 
 - Create mock endpoints
-- Edit endpoint configuration
+- Update endpoint configuration
 - Delete endpoints
 - Search endpoints
-- Filter endpoints by HTTP method
+- Filter by HTTP Method
+- Enable / Disable endpoints
+- Endpoint statistics
 
-### Collections Management
+---
+
+### Scenario Management
+
+- Create scenarios
+- Edit scenarios
+- Delete scenarios
+- Activate scenarios
+- Configure custom responses
+- Configure response status codes
+- Configure response delays
+- Configure timeout simulation
+- Configure random failure simulation
+- Search scenarios
+- Filter by status code
+
+---
+
+### Collections
 
 - Create collections
-- Update collections
+- Edit collections
 - Delete collections
-- Organize mock endpoints
+- Organize endpoints
+- Search collections
+
+---
 
 ### Environment Management
 
@@ -48,31 +76,49 @@ As the project evolves, the application will support advanced mock scenarios suc
 - Edit environments
 - Delete environments
 - Activate environments
-
-### User Experience
-
-- Responsive layout
-- Sidebar navigation
-- Top navigation bar
-- Search functionality
-- Reusable UI components
-- Modern enterprise-style interface
+- Search environments
 
 ---
 
-## Planned Features
+### Global Search
 
-The frontend is designed to support additional capabilities including:
+- Search endpoints
+- Search collections
+- Search environments
+- Search scenarios
+- Instant search results
+- Navigation to matched records
+- Automatic row highlighting
+
+---
+
+### User Experience
+
+- Modern enterprise dashboard
+- Responsive layout
+- Mobile-friendly interface
+- Collapsible sidebar
+- Professional navigation
+- Reusable UI components
+- Consistent design system
+- Loading indicators
+- Confirmation dialogs
+- Empty state components
+
+---
+
+# Upcoming Features
 
 - Request History
-- Response Preview
+- Request Logs
 - OpenAPI Import
+- Response Preview
 - Environment Switching
-- Advanced Form Validation
+- Advanced Validation
 - Toast Notifications
 - Response Templates
-- Advanced Search & Filtering
-- Enhanced Developer Experience
+- Advanced Filtering
+- Export / Import Configuration
 
 ---
 
@@ -80,55 +126,66 @@ The frontend is designed to support additional capabilities including:
 
 ## Frontend
 
-- React (Create React App)
+- React
 - React Router
 - Axios
 - Tailwind CSS
+- Lucide React
 
 ## Development Tools
 
+- Visual Studio Code
 - Git
 - GitHub
-- Visual Studio Code
 
 ---
 
 # System Architecture
 
-The frontend is part of a layered architecture consisting of a React presentation layer, an ASP.NET Core backend, and MongoDB.
+The frontend serves as the presentation layer of the API Mock Server & Scenario Simulator.
 
+```
+React Frontend
+       │
+REST API (HTTP/JSON)
+       │
+ASP.NET Core Web API
+       │
+MongoDB
+```
 ![System Architecture](docs/01-system-architecture.png)
 
-Additional technical diagrams are available in the `docs` directory.
+Additional architecture diagrams are available inside the **docs** folder.
 
 ---
 
 # Project Structure
 
 ```text
-api-mock-server-frontend
+api-mock-server-ui
 │
 ├── public
 │
 ├── src
+│   ├── api
 │   ├── assets
 │   ├── components
-│   │   ├── common
+│   │   ├── forms
 │   │   ├── layout
+│   │   ├── search
 │   │   └── ui
 │   │
 │   ├── hooks
-│   ├── layouts
 │   ├── pages
 │   │   ├── Dashboard
 │   │   ├── ApiBuilder
 │   │   ├── Collections
-│   │   └── Environments
+│   │   ├── Environments
+│   │   └── Scenarios
 │   │
 │   ├── services
-│   ├── styles
 │   ├── utils
-│   ├── App.js
+│   ├── App.jsx
 │   └── index.js
 │
 ├── docs
@@ -158,27 +215,27 @@ npm install
 npm start
 ```
 
-Application URL
+Frontend URL
 
 ```
 http://localhost:3000
 ```
 
-> Ensure the backend API is running before using the application.
+> Ensure the backend application is running before using the frontend.
 
 ---
 
 # Backend Integration
 
-The frontend communicates with the ASP.NET Core Web API using REST APIs over HTTP/JSON.
-
-Current modules interact with backend APIs for:
+The frontend communicates with the ASP.NET Core Web API using REST APIs.
 
 | Module | Operations |
-|---------|------------|
-| Mock Endpoints | Create, Read, Update, Delete |
-| Collections | Create, Read, Update, Delete |
-| Environments | Create, Read, Update, Delete |
+|----------|-------------------------|
+| Mock Endpoints | CRUD |
+| Mock Scenarios | CRUD + Activate |
+| Collections | CRUD |
+| Environments | CRUD |
+| Dynamic Mock Execution | Execute Mock APIs |
 
 ---
 
@@ -188,7 +245,7 @@ Current modules interact with backend APIs for:
 
 ![Dashboard](docs/screenshots/dashboard.png)
 
-Displays project statistics, quick actions, and recently created endpoints.
+Provides an overview of the project with statistics for endpoints, collections, environments, and scenarios, enabling developers to quickly understand the current mock server configuration.
 
 ---
 
@@ -196,7 +253,15 @@ Displays project statistics, quick actions, and recently created endpoints.
 
 ![API Builder](docs/screenshots/api-builder.png)
 
-Create, edit, search, and manage mock endpoints.
+Create, edit, delete, search, filter, and manage mock API endpoints from a centralized interface.
+
+---
+
+## Scenario Management
+
+![Scenarios](docs/screenshots/scenarios.png)
+
+Configure dynamic API behavior by creating multiple scenarios for an endpoint, including custom responses, status codes, delays, timeout simulation, and random failure simulation.
 
 ---
 
@@ -204,7 +269,7 @@ Create, edit, search, and manage mock endpoints.
 
 ![Collections](docs/screenshots/collections.png)
 
-Organize mock endpoints into reusable collections.
+Group related mock endpoints into reusable collections for better organization and management.
 
 ---
 
@@ -212,37 +277,63 @@ Organize mock endpoints into reusable collections.
 
 ![Environment Management](docs/screenshots/environments.png)
 
-Manage application environments used by mock APIs.
+Create and manage multiple environments used during API simulation and testing.
+
+---
+
+## Global Search
+
+![Global Search](docs/screenshots/global-search.png)
+
+Search across endpoints, scenarios, collections, and environments with instant navigation to matching records.
 
 ---
 
 # Documentation
 
-The project documentation includes the following architecture and design diagrams.
+The repository includes architecture diagrams and design documentation.
 
 | Document | Description |
 |----------|-------------|
-| `docs/01-system-architecture.png` | High-level system architecture |
-| `docs/02-foundation-architecture.png` | Current implementation overview |
-| `docs/03-api-request-lifecycle.png` | API request processing flow |
-| `docs/04-database-design.png` | MongoDB collection design |
-| `docs/05-frontend-component-architecture.png` | Frontend application architecture |
-| `docs/06-backend-component-architecture.png` | Backend application architecture |
+| `docs/01-system-architecture.png` | High-level project architecture |
+| `docs/02-foundation-architecture.png` | Foundation layer architecture |
+| `docs/03-api-request-lifecycle.png` | Request execution lifecycle |
+| `docs/04-database-design.png` | MongoDB database design |
+| `docs/05-frontend-component-architecture.png` | Frontend component architecture |
+| `docs/06-backend-component-architecture.png` | Backend component architecture |
 
 ---
 
 # Roadmap
 
-The frontend will continue to evolve with additional developer-focused capabilities.
+## Completed
+
+- ✅ Dashboard
+- ✅ API Builder
+- ✅ Mock Endpoint CRUD
+- ✅ Mock Scenario CRUD
+- ✅ Collection CRUD
+- ✅ Environment CRUD
+- ✅ Dynamic Search
+- ✅ Enterprise Dashboard Layout
+- ✅ Responsive User Interface
+- ✅ Dynamic Mock Engine Integration
+
+---
+
+## Planned
 
 - [ ] Request History
+- [ ] Request Log Viewer
 - [ ] Response Preview
 - [ ] OpenAPI Import
 - [ ] Environment Switching
 - [ ] Advanced Validation
-- [ ] Enhanced Search & Filtering
-- [ ] Improved User Experience
-- [ ] Response Template Editor
+- [ ] Toast Notifications
+- [ ] Response Templates
+- [ ] Export / Import Configuration
+- [ ] Advanced Filtering
+- [ ] Dark Mode
 
 ---
 
@@ -250,7 +341,30 @@ The frontend will continue to evolve with additional developer-focused capabilit
 
 Contributions are welcome.
 
-Please create a feature branch, follow the existing project structure, and ensure changes are tested before submitting a pull request.
+To contribute:
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Follow the existing project structure and coding standards.
+4. Test your changes before submitting.
+5. Open a Pull Request describing your changes.
+
+---
+
+# Future Enhancements
+
+The frontend has been designed with extensibility in mind and will continue to evolve with additional enterprise-level capabilities, including:
+
+- Request Analytics Dashboard
+- API Performance Metrics
+- Environment Comparison
+- Collection Import & Export
+- Team Collaboration Features
+- User Authentication & Authorization
+- Role-Based Access Control
+- Theme Customization
+- Keyboard Shortcuts
+- API Documentation Viewer
 
 ---
 
@@ -260,10 +374,8 @@ Please create a feature branch, follow the existing project structure, and ensur
 
 Developer
 
-API Mock Server & Scenario Simulator
+**API Mock Server & Scenario Simulator**
+
+Built as a full-stack developer tool using React, ASP.NET Core Web API, and MongoDB to simplify API development, frontend integration, and testing through configurable mock services.
 
 ---
-
-# License
-
-This project is intended for educational and internship purposes.

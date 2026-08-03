@@ -200,7 +200,7 @@ api-mock-server-ui
 ## Clone Repository
 
 ```bash
-git clone <frontend-repository-url>
+git clone <https://github.com/Sasigit1704/API-Mock-Server-Frontend.git>
 ```
 
 ## Install Dependencies

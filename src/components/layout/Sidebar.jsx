@@ -37,15 +37,16 @@ const activePages = [
     title: "Scenarios",
     path: "/scenarios",
     icon: Workflow,
+  },
+  {
+    title: "Request History",
+    path: "/history",
+    icon: History,
   }
 ];
 
 const upcomingPages = [
-  {
-    title: "Request History",
-    //week: "Week 3",
-    icon: History,
-  },
+  
   {
     title: "OpenAPI Import",
     //week: "Week 4",

@@ -1,7 +1,23 @@
 import api from "../api/api";
-import { API_ROUTES } from "../constants/apiRoutes";
 
-export const getMockEndpoints = async () => {
-  const { data } = await api.get(API_ROUTES.ENDPOINTS);
+// Get all request history
+export const getRequestHistory = async () => {
+  const { data } = await api.get("/RequestHistory");
   return data;
+};
+
+// Get request by ID
+export const getRequestHistoryById = async (id) => {
+  const { data } = await api.get(`/RequestHistory/${id}`);
+  return data;
+};
+
+// Delete request
+export const deleteRequestHistory = async (id) => {
+  await api.delete(`/RequestHistory/${id}`);
+};
+
+// Clear all history
+export const clearRequestHistory = async () => {
+  await api.delete("/RequestHistory");
 };

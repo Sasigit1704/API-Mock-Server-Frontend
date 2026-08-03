@@ -5,6 +5,7 @@ import ApiBuilder from "./pages/ApiBuilder/ApiBuilder";
 import Collections from "./pages/Collections/Collections";
 import Environments from "./pages/Environments/Environments";
 import Scenarios from "./pages/Scenarios/Scenarios";
+import RequestHistory from "./pages/RequestHistory/RequestHistory";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/collections" element={<Collections />} />
           <Route path="/environment" element={<Environments />} />
           <Route path="/scenarios" element={<Scenarios />} />
+          <Route path="/history" element={<RequestHistory />} />
         </Route>
       </Routes>
     </BrowserRouter>

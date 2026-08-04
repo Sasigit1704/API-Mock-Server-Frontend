@@ -3,7 +3,7 @@ import {
   LayoutDashboard,
   Server,
   FolderKanban,
-  Workflow,
+  //Workflow,
   Globe,
   History,
   FileCode2,
@@ -33,11 +33,11 @@ const activePages = [
     path: "/environment",
     icon: Globe,
   },
-  {
+  /*{
     title: "Scenarios",
     path: "/scenarios",
     icon: Workflow,
-  },
+  },*/
   {
     title: "Request History",
     path: "/history",

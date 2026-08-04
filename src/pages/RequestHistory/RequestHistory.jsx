@@ -5,6 +5,7 @@ import {
   Trash2,
 } from "lucide-react";
 
+import RequestDetailsModal from "./RequestHistoryModal";
 import Button from "../../components/ui/Button";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
@@ -12,6 +13,7 @@ import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import {
   getRequestHistory,
   clearRequestHistory,
+  deleteRequestHistory,
 } from "../../services/requestHistoryService";
 
 import RequestHistoryStats from "./RequestHistoryStats";
@@ -31,6 +33,10 @@ function RequestHistory() {
 
   const [showClearDialog, setShowClearDialog] = useState(false);
 
+  const [selectedLog, setSelectedLog] = useState(null);
+  
+  const [deleteLog, setDeleteLog] = useState(null);
+
   const loadHistory = useCallback(async () => {
     setLoading(true);
 
@@ -48,6 +54,17 @@ function RequestHistory() {
   useEffect(() => {
     loadHistory();
   }, [loadHistory]);
+
+  const handleDelete = async () => {
+    if (!deleteLog) return;
+    try {
+      await deleteRequestHistory(deleteLog.id);
+      await loadHistory();
+      setDeleteLog(null);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleClearHistory = async () => {
     try {
@@ -182,7 +199,15 @@ function RequestHistory() {
 
       <RequestHistoryTable
         logs={filteredLogs}
+        onView={setSelectedLog}
         onRefresh={loadHistory}
+        onDelete={(log) => setDeleteLog(log)}
+      />
+
+      <RequestDetailsModal
+        open={!!selectedLog}
+        log={selectedLog}
+        onClose={() => setSelectedLog(null)}
       />
 
       <ConfirmDialog
@@ -192,6 +217,14 @@ function RequestHistory() {
         onCancel={() =>
           setShowClearDialog(false)
         }
+      />
+      {/* Delete */}
+
+      <ConfirmDialog
+        open={!!deleteLog}
+        message={`Are you sure you want to delete "${deleteLog?.path}"?`}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteLog(null)}
       />
 
     </div>

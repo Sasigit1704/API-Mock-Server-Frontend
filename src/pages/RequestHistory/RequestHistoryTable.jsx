@@ -1,9 +1,9 @@
-import { Eye } from "lucide-react";
+import { Eye, Trash2 } from "lucide-react";
 import Table from "../../components/ui/Table";
 import Badge from "../../components/ui/Badge";
 import EmptyState from "../../components/ui/EmptyState";
 
-function RequestHistoryTable({ logs }) {
+function RequestHistoryTable({ logs, onView, onDelete }) {
   if (logs.length === 0) {
     return (
       <EmptyState
@@ -12,23 +12,6 @@ function RequestHistoryTable({ logs }) {
       />
     );
   }
-
-  const getMethodVariant = (method) => {
-    switch (method) {
-      case "GET":
-        return "info";
-      case "POST":
-        return "success";
-      case "PUT":
-        return "warning";
-      case "PATCH":
-        return "secondary";
-      case "DELETE":
-        return "error";
-      default:
-        return "secondary";
-    }
-  };
 
   const getStatusVariant = (status) => {
     if (status >= 500) return "error";
@@ -64,17 +47,17 @@ function RequestHistoryTable({ logs }) {
           {/* Method */}
 
           <td className="px-8 py-5">
-            <Badge variant={getMethodVariant(log.method)}>
+            <Badge variant={log.method.toLowerCase()}>
               {log.method}
             </Badge>
           </td>
 
           {/* Path */}
 
-          <td className="px-8 py-5">
-            <span className="font-mono text-sm text-slate-700">
+          <td className="px-8 py-5 max-w-xs">
+            <p className="truncate font-mono text-sm text-slate-700" title={log.path}>
               {log.path}
-            </span>
+            </p>
           </td>
 
           {/* Endpoint */}
@@ -88,9 +71,15 @@ function RequestHistoryTable({ logs }) {
           {/* Scenario */}
 
           <td className="px-8 py-5">
-            <span className="text-slate-600">
-              {log.scenarioName || "Default Response"}
-            </span>
+            {log.scenarioName ? (
+              <Badge variant={getStatusVariant(log.statusCode)}>
+                {log.scenarioName}
+              </Badge>
+            ) : (
+              <Badge variant="secondary">
+                Default
+              </Badge>
+            )}
           </td>
 
           {/* Status */}
@@ -112,19 +101,38 @@ function RequestHistoryTable({ logs }) {
           {/* Date */}
 
           <td className="px-8 py-5 text-slate-600 whitespace-nowrap">
-            {new Date(log.requestTime).toLocaleString()}
+            {new Date(log.requestTime).toLocaleString("en-IN", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
           </td>
 
           {/* Action */}
 
           <td className="px-8 py-5">
             <button
+              onClick={() => onView(log)}
               className="rounded-full p-2 transition hover:bg-blue-100"
               title="View Details"
             >
               <Eye
                 size={18}
                 className="text-blue-600"
+              />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(log);
+              }}
+              className="rounded-full p-2 hover:bg-red-100"
+            >
+              <Trash2
+                size={18}
+                className="text-red-600"
               />
             </button>
           </td>

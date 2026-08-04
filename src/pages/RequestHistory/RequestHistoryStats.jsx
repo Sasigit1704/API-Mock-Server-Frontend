@@ -31,8 +31,8 @@ function RequestHistoryStats({ logs }) {
       title: "Total Requests",
       value: totalRequests,
       icon: Activity,
-      bg: "bg-blue-100",
-      iconColor: "text-blue-600",
+      bg: "bg-cyan-100",
+      iconColor: "text-cyan-600",
     },
     {
       title: "Successful",

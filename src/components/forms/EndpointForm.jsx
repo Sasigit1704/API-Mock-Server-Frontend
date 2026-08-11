@@ -46,6 +46,16 @@ function EndpointForm({
       enableProcessErrors: false,
       processErrors: [],
 
+      enableRateLimiting: false,
+      rateLimitRequests: 10,
+      rateLimitWindowSeconds: 60,
+      rateLimitStatusCode: 429,
+      rateLimitResponseBody: "{\n  \"message\": \"Rate limit exceeded.\"\n}",
+
+      enableMalformedJson: false,
+      malformedJsonStatusCode: 500,
+      malformedJsonResponseBody: "{\n  \"error\": \"Malformed response\"",
+
       isEnabled: true,
 
       // Authentication
@@ -113,6 +123,57 @@ function EndpointForm({
       }
     }
 
+    // Rate limiting validation
+
+    if (data.enableRateLimiting) {
+      if (Number(data.rateLimitRequests) <= 0) {
+        newErrors.rateLimitRequests =
+          "Requests allowed must be greater than 0.";
+      }
+
+      if (Number(data.rateLimitWindowSeconds) <= 0) {
+        newErrors.rateLimitWindowSeconds =
+          "Time window must be greater than 0 seconds.";
+      }
+
+      if (
+        Number(data.rateLimitStatusCode) < 100 ||
+        Number(data.rateLimitStatusCode) > 599
+      ) {
+        newErrors.rateLimitStatusCode =
+          "Rate limit status code must be between 100 and 599.";
+      }
+
+      if (!data.rateLimitResponseBody?.trim()) {
+        newErrors.rateLimitResponseBody =
+          "Rate limit response body is required.";
+      } else {
+        try {
+          JSON.parse(data.rateLimitResponseBody);
+        } catch {
+          newErrors.rateLimitResponseBody =
+            "Rate limit response body must be valid JSON.";
+        }
+      }
+    }
+
+    // Malformed JSON validation
+
+    if (data.enableMalformedJson) {
+      if (
+        Number(data.malformedJsonStatusCode) < 100 ||
+        Number(data.malformedJsonStatusCode) > 599
+      ) {
+        newErrors.malformedJsonStatusCode =
+          "Malformed JSON status code must be between 100 and 599.";
+      }
+
+      if (!data.malformedJsonResponseBody?.trim()) {
+        newErrors.malformedJsonResponseBody =
+          "Malformed JSON response body is required.";
+      }
+    }
+
     // Authentication validation
 
     if (
@@ -128,6 +189,61 @@ function EndpointForm({
     return (
       Object.keys(newErrors)
         .length === 0
+    );
+  };
+
+  // ============================================================
+  // APPLY GENERATED SCHEMA RULES
+  // ============================================================
+
+  const applyGeneratedRules = (
+    schema,
+    currentRules = []
+  ) => {
+    if (
+      typeof schema !== "string" ||
+      !schema.trim()
+    ) {
+      setParsedFields([]);
+      return currentRules;
+    }
+
+    const generatedRules =
+      generateValidationRules(schema);
+
+    setParsedFields(
+      generatedRules.map((rule) => ({
+        fieldPath: rule.fieldPath,
+        dataType: rule.dataType,
+        isRequired: rule.isRequired,
+      }))
+    );
+
+    /*
+     * Refresh schema-derived type/required information,
+     * while preserving the user's existing constraints
+     * and custom validation error responses.
+     */
+    return generatedRules.map(
+      (generatedRule) => {
+        const existingRule =
+          currentRules.find(
+            (rule) =>
+              rule.fieldPath ===
+              generatedRule.fieldPath
+          );
+
+        return existingRule
+          ? {
+              ...generatedRule,
+              ...existingRule,
+              dataType:
+                generatedRule.dataType,
+              isRequired:
+                generatedRule.isRequired,
+            }
+          : generatedRule;
+      }
     );
   };
 
@@ -152,7 +268,6 @@ function EndpointForm({
           .enablePercentageBasedResponses ??
         false,
 
-      // NEW
       enableInputErrors:
         endpoint.enableInputErrors ??
         true,
@@ -165,6 +280,36 @@ function EndpointForm({
         endpoint.processErrors ||
         [],
 
+      enableRateLimiting:
+        endpoint.enableRateLimiting ??
+        false,
+
+      rateLimitRequests:
+        endpoint.rateLimitRequests ??
+        10,
+
+      rateLimitWindowSeconds:
+        endpoint.rateLimitWindowSeconds ??
+        60,
+
+      rateLimitStatusCode:
+        endpoint.rateLimitStatusCode ??
+        429,
+
+      rateLimitResponseBody:
+        endpoint.rateLimitResponseBody ||
+        "{\n  \"message\": \"Rate limit exceeded.\"\n}",
+
+      enableMalformedJson:
+        endpoint.enableMalformedJson ?? false,
+
+      malformedJsonStatusCode:
+        endpoint.malformedJsonStatusCode ?? 500,
+
+      malformedJsonResponseBody:
+        endpoint.malformedJsonResponseBody ||
+        "{\n  \"error\": \"Malformed response\"",
+
       requiresAuthentication:
         endpoint
           .requiresAuthentication ??
@@ -175,27 +320,23 @@ function EndpointForm({
         "",
     };
 
-    setFormData(endpointData);
-
+    /*
+     * JSON Schema/OpenAPI schemas and normal sample JSON
+     * are both handled by generateValidationRules().
+     */
     if (endpoint.requestSchema) {
-      const generatedRules =
-        generateValidationRules(
-          endpoint.requestSchema
+      endpointData.validationRules =
+        applyGeneratedRules(
+          endpoint.requestSchema,
+          endpointData.validationRules
         );
-
-      const fields =
-        generatedRules.map(
-          (rule) =>
-            rule.fieldPath
-        );
-
-      setParsedFields([
-        ...new Set(fields),
-      ]);
     } else {
       setParsedFields([]);
     }
+
+    setFormData(endpointData);
   }, [endpoint]);
+
 
   // ============================================================
   // CHANGE HANDLER
@@ -228,48 +369,12 @@ function EndpointForm({
       try {
         JSON.parse(value);
 
-        const generatedRules =
-          generateValidationRules(
-            value
-          );
-
-        const fields =
-          generatedRules.map(
-            (rule) =>
-              rule.fieldPath
-          );
-
-        setParsedFields([
-          ...new Set(fields),
-        ]);
-
-        const existingRules =
-          formData.validationRules ||
-          [];
-
-        const mergedRules =
-          generatedRules.map(
-            (generatedRule) => {
-              const existingRule =
-                existingRules.find(
-                  (rule) =>
-                    rule.fieldPath ===
-                    generatedRule.fieldPath
-                );
-
-              return existingRule
-                ? {
-                    ...generatedRule,
-                    ...existingRule,
-                    dataType:
-                      generatedRule.dataType,
-                  }
-                : generatedRule;
-            }
-          );
-
         updatedFormData.validationRules =
-          mergedRules;
+          applyGeneratedRules(
+            value,
+            formData.validationRules ||
+              []
+          );
       } catch {
         setParsedFields([]);
       }
@@ -441,6 +546,38 @@ function EndpointForm({
 
       processErrors:
         formData.processErrors || [],
+
+      enableRateLimiting:
+        Boolean(
+          formData.enableRateLimiting
+        ),
+
+      rateLimitRequests:
+        Number(
+          formData.rateLimitRequests
+        ),
+
+      rateLimitWindowSeconds:
+        Number(
+          formData.rateLimitWindowSeconds
+        ),
+
+      rateLimitStatusCode:
+        Number(
+          formData.rateLimitStatusCode
+        ),
+
+      rateLimitResponseBody:
+        formData.rateLimitResponseBody || "",
+
+      enableMalformedJson:
+        Boolean(formData.enableMalformedJson),
+
+      malformedJsonStatusCode:
+        Number(formData.malformedJsonStatusCode),
+
+      malformedJsonResponseBody:
+        formData.malformedJsonResponseBody || "",
     });
   };
 
@@ -621,7 +758,9 @@ function EndpointForm({
 
           <p className="text-sm text-slate-500">
             Define the expected request JSON
-            structure.
+            structure. JSON Schema with
+            type/properties/required is supported,
+            and normal sample JSON is also supported.
           </p>
         </div>
 
@@ -632,8 +771,19 @@ function EndpointForm({
           }
           onChange={handleChange}
           rows={8}
-          placeholder={`{
-  "name": "string",
+          placeholder={`JSON Schema:
+{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "age": { "type": "integer" }
+  },
+  "required": ["name"]
+}
+
+Or normal sample JSON:
+{
+  "name": "Sasi",
   "age": 25
 }`}
           className="w-full rounded-xl border border-slate-300 px-4 py-3 font-mono text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
@@ -1081,6 +1231,211 @@ function EndpointForm({
             >
               Add Process Error
             </Button>
+          </div>
+        )}
+      </div>
+
+      {/* ========================================================
+          RATE LIMITING
+      ======================================================== */}
+
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+        <div className="mb-4">
+          <h3 className="font-semibold text-slate-900">
+            Rate Limiting
+          </h3>
+          <p className="mt-1 text-sm text-slate-500">
+            Simulate a request limit for this endpoint within a fixed time window.
+          </p>
+        </div>
+
+        <label className="flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            name="enableRateLimiting"
+            checked={formData.enableRateLimiting}
+            onChange={handleChange}
+            className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600"
+          />
+          <div>
+            <p className="text-sm font-medium text-slate-800">
+              Enable Rate Limiting
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
+              After the configured number of requests, further requests receive the configured rate-limit response until the window resets.
+            </p>
+          </div>
+        </label>
+
+        {formData.enableRateLimiting && (
+          <div className="mt-5 space-y-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  Requests Allowed
+                </label>
+                <Input
+                  type="number"
+                  min="1"
+                  name="rateLimitRequests"
+                  value={formData.rateLimitRequests}
+                  onChange={handleChange}
+                  placeholder="5"
+                />
+                {errors.rateLimitRequests && (
+                  <p className="mt-2 text-sm text-red-600">
+                    {errors.rateLimitRequests}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  Window (seconds)
+                </label>
+                <Input
+                  type="number"
+                  min="1"
+                  name="rateLimitWindowSeconds"
+                  value={formData.rateLimitWindowSeconds}
+                  onChange={handleChange}
+                  placeholder="60"
+                />
+                {errors.rateLimitWindowSeconds && (
+                  <p className="mt-2 text-sm text-red-600">
+                    {errors.rateLimitWindowSeconds}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  Limit Status Code
+                </label>
+                <Input
+                  type="number"
+                  min="100"
+                  max="599"
+                  name="rateLimitStatusCode"
+                  value={formData.rateLimitStatusCode}
+                  onChange={handleChange}
+                  placeholder="429"
+                />
+                {errors.rateLimitStatusCode && (
+                  <p className="mt-2 text-sm text-red-600">
+                    {errors.rateLimitStatusCode}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Rate Limit Response Body
+              </label>
+              <textarea
+                name="rateLimitResponseBody"
+                value={formData.rateLimitResponseBody}
+                onChange={handleChange}
+                rows={5}
+                className={`w-full rounded-xl border px-4 py-3 font-mono text-sm focus:outline-none focus:ring-4 ${
+                  errors.rateLimitResponseBody
+                    ? "border-red-500 focus:ring-red-100"
+                    : "border-slate-300 focus:border-blue-500 focus:ring-blue-100"
+                }`}
+              />
+              {errors.rateLimitResponseBody && (
+                <p className="mt-2 text-sm text-red-600">
+                  {errors.rateLimitResponseBody}
+                </p>
+              )}
+            </div>
+
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
+              Example: 5 requests per 60 seconds. The 6th request returns the configured status and response until the window resets.
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ========================================================
+          MALFORMED JSON
+      ======================================================== */}
+
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+        <div className="mb-4">
+          <h3 className="font-semibold text-slate-900">
+            Malformed JSON
+          </h3>
+          <p className="mt-1 text-sm text-slate-500">
+            Intentionally return an invalid JSON response to simulate a broken backend response.
+          </p>
+        </div>
+
+        <label className="flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            name="enableMalformedJson"
+            checked={formData.enableMalformedJson}
+            onChange={handleChange}
+            className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600"
+          />
+          <div>
+            <p className="text-sm font-medium text-slate-800">
+              Enable Malformed JSON
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
+              When enabled, the server returns the configured body exactly as entered without validating or repairing it.
+            </p>
+          </div>
+        </label>
+
+        {formData.enableMalformedJson && (
+          <div className="mt-5 space-y-4">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Malformed JSON Status Code
+              </label>
+              <Input
+                type="number"
+                min="100"
+                max="599"
+                name="malformedJsonStatusCode"
+                value={formData.malformedJsonStatusCode}
+                onChange={handleChange}
+                placeholder="500"
+              />
+              {errors.malformedJsonStatusCode && (
+                <p className="mt-2 text-sm text-red-600">
+                  {errors.malformedJsonStatusCode}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Malformed JSON Response Body
+              </label>
+              <textarea
+                name="malformedJsonResponseBody"
+                value={formData.malformedJsonResponseBody}
+                onChange={handleChange}
+                rows={6}
+                className={`w-full rounded-xl border px-4 py-3 font-mono text-sm focus:outline-none focus:ring-4 ${
+                  errors.malformedJsonResponseBody
+                    ? "border-red-500 focus:ring-red-100"
+                    : "border-slate-300 focus:border-blue-500 focus:ring-blue-100"
+                }`}
+              />
+              {errors.malformedJsonResponseBody && (
+                <p className="mt-2 text-sm text-red-600">
+                  {errors.malformedJsonResponseBody}
+                </p>
+              )}
+              <p className="mt-2 text-xs text-slate-500">
+                The body is intentionally allowed to be invalid JSON. Example: missing the final closing brace.
+              </p>
+            </div>
           </div>
         )}
       </div>

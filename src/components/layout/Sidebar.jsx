@@ -48,14 +48,11 @@ const activePages = [
     title: "Request History",
     path: "/history",
     icon: History,
-  }
-];
+  },
 
-const upcomingPages = [
-  
   {
     title: "OpenAPI Import",
-    //week: "Week 4",
+    path: "/openapi",
     icon: FileCode2,
   },
 ];
@@ -172,50 +169,6 @@ function Sidebar({ isCollapsed, onToggle }) {
               </div>
 
               </NavLink>
-            );
-          })}
-        </div>
-
-        {/* Divider */}
-        <div className="my-8 border-t border-slate-200" />
-        {!isCollapsed && (
-          <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
-            Upcoming Modules
-          </p>
-        )}
-        <div className="space-y-2">
-          {upcomingPages.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.title}
-                disabled
-                className="
-                  flex
-                  w-full
-                  items-center
-                  justify-between
-                  rounded-xl
-                  px-4
-                  py-4
-                  text-left
-                  opacity-60
-                  transition
-                  hover:bg-slate-100
-                "
-              >
-                <div className="flex items-center gap-3">
-                  <Icon size={20} />
-                  {!isCollapsed && (
-                      <span className="font-medium">
-                          {item.title}
-                      </span>
-                  )}
-                </div>
-                <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
-                  {item.week}
-                </span>
-              </button>
             );
           })}
         </div>

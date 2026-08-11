@@ -7,6 +7,7 @@ import Collections from "./pages/Collections/Collections";
 import Environments from "./pages/Environments/Environments";
 import Scenarios from "./pages/Scenarios/Scenarios";
 import RequestHistory from "./pages/RequestHistory/RequestHistory";
+import OpenApi from "./pages/OpenApi/OpenApiImport";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/environment" element={<Environments />} />
           <Route path="/scenarios" element={<Scenarios />} />
           <Route path="/history" element={<RequestHistory />} />
+          <Route path="/openapi" element={<OpenApi />} />
         </Route>
       </Routes>
     </BrowserRouter>

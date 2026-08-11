@@ -33,7 +33,7 @@ function ResponseForm({
 
         responseBody:
           initialResponse.responseBody || "",
-        
+
         percentage:
           initialResponse?.percentage ?? 0,
 
@@ -121,7 +121,6 @@ function ResponseForm({
 
     setForm(updatedForm);
 
-    // Clear the specific error while typing.
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -129,7 +128,6 @@ function ResponseForm({
       }));
     }
 
-    // Validate JSON while editing response body.
     if (name === "responseBody") {
       if (
         value.trim() &&
@@ -320,9 +318,14 @@ function ResponseForm({
 
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <label className="text-sm font-medium text-slate-700">
-            Response Body
-          </label>
+          <div>
+            <label className="text-sm font-medium text-slate-700">
+              Response Body
+            </label>
+            <p className="mt-1 text-xs text-slate-500">
+              Templates supported: {"{{path.id}}"}, {"{{query.name}}"}, {"{{body.name}}"}, {"{{header.X-Token}}"}.
+            </p>
+          </div>
 
           <Badge
             variant={

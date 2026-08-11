@@ -27,6 +27,40 @@ function ValidationRuleForm({
   const isEditing = initialRule !== null;
 
   /*
+   * Fields can come from the generated JSON Schema metadata:
+   * {
+   *   fieldPath: "name",
+   *   dataType: "String",
+   *   isRequired: true
+   * }
+   *
+   * Older/manual callers may still provide plain strings,
+   * so those remain supported.
+   */
+  const normalizedFields = (fields || [])
+    .map((field) => {
+      if (typeof field === "string") {
+        return {
+          fieldPath: field,
+          dataType: "String",
+          isRequired: true,
+        };
+      }
+
+      return {
+        fieldPath: field.fieldPath || "",
+        dataType: field.dataType || "String",
+        isRequired: field.isRequired ?? false,
+      };
+    })
+    .filter((field) => field.fieldPath);
+
+  const getFieldMetadata = (fieldPath) =>
+    normalizedFields.find(
+      (field) => field.fieldPath === fieldPath
+    );
+
+  /*
    * Decide which validation errors are applicable
    * for the selected data type and configured rules.
    */
@@ -137,6 +171,21 @@ function ValidationRuleForm({
       type,
       checked,
     } = e.target;
+
+    if (name === "fieldPath") {
+      const metadata = getFieldMetadata(value);
+
+      setRule((prev) => ({
+        ...prev,
+        fieldPath: value,
+        dataType:
+          metadata?.dataType || prev.dataType,
+        isRequired:
+          metadata?.isRequired ?? prev.isRequired,
+      }));
+
+      return;
+    }
 
     setRule((prev) => ({
       ...prev,
@@ -314,12 +363,12 @@ function ValidationRuleForm({
             Select Field
           </option>
 
-          {fields.map((field) => (
+          {normalizedFields.map((field) => (
             <option
-              key={field}
-              value={field}
+              key={field.fieldPath}
+              value={field.fieldPath}
             >
-              {field}
+              {field.fieldPath}
             </option>
           ))}
         </Select>
@@ -351,6 +400,20 @@ function ValidationRuleForm({
         </Select>
 
       </div>
+
+      {getFieldMetadata(rule.fieldPath) && (
+        <p className="text-xs text-slate-500">
+          Schema detected:
+          <span className="ml-1 font-medium text-slate-700">
+            {getFieldMetadata(rule.fieldPath).dataType}
+          </span>
+          <span className="ml-2 font-medium">
+            {getFieldMetadata(rule.fieldPath).isRequired
+              ? "Required"
+              : "Optional"}
+          </span>
+        </p>
+      )}
 
       {/* Length validations */}
 

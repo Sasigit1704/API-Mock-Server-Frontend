@@ -1,28 +1,35 @@
 import { useEffect, useState } from "react";
-import {
-  getEndpoints,
-  testEndpoint,
-} from "../../services/apiTesterService";
+import { getEndpoints, testEndpoint } from "../../services/apiTesterService";
 import ApiTesterToolbar from "./ApiTesterToolbar";
 import RequestEditor from "./RequestEditor";
 import ResponseViewer from "./ResponseViewer";
+
+function getPathParameterNames(path = "") {
+  return [...path.matchAll(/\{([^}]+)\}/g)].map((match) => match[1]);
+}
+
+function getInitialPathParams(path = "") {
+  return getPathParameterNames(path).reduce((params, name) => {
+    params[name] = "";
+    return params;
+  }, {});
+}
 
 function ApiTester() {
   const [selectedEndpoint, setSelectedEndpoint] = useState(null);
   const [endpoints, setEndpoints] = useState([]);
   const [loadingEndpoints, setLoadingEndpoints] = useState(true);
   const [loading, setLoading] = useState(false);
-
   const [requestBody, setRequestBody] = useState("{}");
   const [authToken, setAuthToken] = useState("");
+  const [pathParams, setPathParams] = useState({});
+  const [queryParams, setQueryParams] = useState([]);
   const [response, setResponse] = useState(null);
 
   const loadEndpoints = async () => {
     try {
       setLoadingEndpoints(true);
-
       const data = await getEndpoints();
-
       setEndpoints(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to load endpoints:", error);
@@ -40,26 +47,43 @@ function ApiTester() {
     if (!selectedEndpoint) {
       setRequestBody("{}");
       setAuthToken("");
+      setPathParams({});
+      setQueryParams([]);
       setResponse(null);
       return;
     }
 
     setRequestBody("{}");
     setAuthToken("");
+    setPathParams(getInitialPathParams(selectedEndpoint.path));
+    setQueryParams([]);
     setResponse(null);
   }, [selectedEndpoint]);
 
   const handleSendRequest = async () => {
-    if (!selectedEndpoint) {
+    if (!selectedEndpoint) return;
+
+    const missingPathParameter = Object.entries(pathParams).find(
+      ([, value]) => !String(value ?? "").trim()
+    );
+
+    if (missingPathParameter) {
+      setResponse({
+        status: 400,
+        responseTime: 0,
+        body: {
+          success: false,
+          message: `Path parameter "${missingPathParameter[0]}" is required.`,
+        },
+        isClientError: true,
+      });
       return;
     }
 
     let parsedBody = {};
 
     try {
-      parsedBody = requestBody.trim()
-        ? JSON.parse(requestBody)
-        : {};
+      parsedBody = requestBody.trim() ? JSON.parse(requestBody) : {};
     } catch {
       setResponse({
         status: 400,
@@ -83,7 +107,9 @@ function ApiTester() {
         selectedEndpoint.method,
         selectedEndpoint.path,
         parsedBody,
-        authToken
+        authToken,
+        pathParams,
+        queryParams
       );
 
       const end = performance.now();
@@ -118,13 +144,10 @@ function ApiTester() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-
       <div className="rounded-2xl bg-slate-100 p-8 shadow-sm">
         <h1 className="text-4xl font-bold tracking-tight text-slate-900">
           API Tester
         </h1>
-
         <p className="mt-3 max-w-3xl text-slate-500">
           Test your configured mock endpoints directly from the application.
           Verify authentication, input validation, process errors, scenarios,
@@ -147,10 +170,13 @@ function ApiTester() {
           setRequestBody={setRequestBody}
           authToken={authToken}
           setAuthToken={setAuthToken}
+          pathParams={pathParams}
+          setPathParams={setPathParams}
+          queryParams={queryParams}
+          setQueryParams={setQueryParams}
           onSend={handleSendRequest}
           loading={loading}
         />
-
         <ResponseViewer
           response={response}
           onClear={handleClearResponse}

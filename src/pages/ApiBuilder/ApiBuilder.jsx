@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   getMockEndpoints,
   createMockEndpoint,
@@ -15,6 +15,9 @@ import Modal from "../../components/ui/Modal";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import { useSearchParams, useLocation } from "react-router-dom";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import Pagination from "../../components/ui/Pagination";
+
+const ITEMS_PER_PAGE = 10;
 
 function ApiBuilder() {
   const [endpoints, setEndpoints] = useState([]);
@@ -25,39 +28,43 @@ function ApiBuilder() {
 
   const [search, setSearch] = useState("");
   const [methodFilter, setMethodFilter] = useState("");
-  const [collectionFilter, setCollectionFilter] = useState("");
+  const [collectionFilter, setCollectionFilter] =
+    useState("");
 
   const [loading, setLoading] = useState(false);
-  const [deleteEndpoint, setDeleteEndpoint] = useState(null);
+  const [deleteEndpoint, setDeleteEndpoint] =
+    useState(null);
 
   const [searchParams] = useSearchParams();
+
   const expandId = searchParams.get("expand");
 
-  const [expandedEndpointId, setExpandedEndpointId] = useState(null);
+  const [expandedEndpointId, setExpandedEndpointId] =
+    useState(null);
+
+  const [currentPage, setCurrentPage] =
+    useState(1);
+
+  const location = useLocation();
+
+  const [highlightedId, setHighlightedId] =
+    useState(
+      location.state?.highlightEndpointId
+    );
+
+  // ============================================================
+  // LOAD DATA
+  // ============================================================
 
   useEffect(() => {
     loadEndpoints();
     loadCollections();
+
     if (searchParams.get("create") === "true") {
       setEditingEndpoint(null);
       setShowForm(true);
     }
   }, [searchParams]);
-
-  useEffect(() => {
-    if (expandId && endpoints.length > 0) {
-      setExpandedEndpointId(expandId);
-
-      const element = document.getElementById(`endpoint-${expandId}`);
-
-      if (element) {
-        element.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      }
-    }
-  }, [expandId, endpoints]);
 
   const loadEndpoints = async () => {
     setLoading(true);
@@ -80,16 +87,23 @@ function ApiBuilder() {
       console.error(error);
     }
   };
-  
+
+  // ============================================================
+  // SAVE ENDPOINT
+  // ============================================================
+
   const handleSave = async (formData) => {
-    const normalizedPath = formData.path.startsWith("/")
-      ? formData.path
-      : "/" + formData.path;
+    const normalizedPath =
+      formData.path.startsWith("/")
+        ? formData.path
+        : "/" + formData.path;
 
     const duplicate = endpoints.find(
       (item) =>
-        item.method.toUpperCase() === formData.method.toUpperCase() &&
-        item.path.toLowerCase() === normalizedPath.toLowerCase() &&
+        item.method.toUpperCase() ===
+          formData.method.toUpperCase() &&
+        item.path.toLowerCase() ===
+          normalizedPath.toLowerCase() &&
         item.id !== editingEndpoint?.id
     );
 
@@ -102,7 +116,10 @@ function ApiBuilder() {
 
     try {
       if (editingEndpoint) {
-        await updateMockEndpoint(editingEndpoint.id, formData);
+        await updateMockEndpoint(
+          editingEndpoint.id,
+          formData
+        );
       } else {
         await createMockEndpoint(formData);
       }
@@ -121,11 +138,17 @@ function ApiBuilder() {
     }
   };
 
+  // ============================================================
+  // DELETE ENDPOINT
+  // ============================================================
+
   const handleDelete = async () => {
     if (!deleteEndpoint) return;
 
     try {
-      await deleteMockEndpoint(deleteEndpoint.id);
+      await deleteMockEndpoint(
+        deleteEndpoint.id
+      );
 
       await loadEndpoints();
 
@@ -135,41 +158,136 @@ function ApiBuilder() {
     }
   };
 
-  const toggleExpand = (id) => {
-    setExpandedEndpointId((prev) =>
-      prev === id ? null : id
-    );
-  };
+  // ============================================================
+  // FILTER
+  //
+  // IMPORTANT:
+  // Filtering happens BEFORE pagination.
+  // Therefore search works across ALL pages.
+  // ============================================================
 
-  const filteredEndpoints = endpoints.filter((endpoint) => {
-    const matchesSearch =
-      endpoint.path.toLowerCase().includes(search.toLowerCase()) ||
-      endpoint.method.toLowerCase().includes(search.toLowerCase());
+  const filteredEndpoints = useMemo(() => {
+    return endpoints.filter((endpoint) => {
+      const searchValue =
+        search.trim().toLowerCase();
 
-    const matchesMethod =
-      methodFilter === "" || endpoint.method === methodFilter;
+      const matchesSearch =
+        searchValue === "" ||
+        endpoint.path
+          .toLowerCase()
+          .includes(searchValue) ||
+        endpoint.method
+          .toLowerCase()
+          .includes(searchValue) ||
+        endpoint.name
+          ?.toLowerCase()
+          .includes(searchValue);
 
-    const matchesCollection =
-      collectionFilter === "" ||
-      String(endpoint.collectionId) === collectionFilter;
+      const matchesMethod =
+        methodFilter === "" ||
+        endpoint.method === methodFilter;
 
-    return (
-      matchesSearch &&
-      matchesMethod &&
-      matchesCollection
-    );
-  });
+      const matchesCollection =
+        collectionFilter === "" ||
+        String(endpoint.collectionId) ===
+          collectionFilter;
 
-  const collectionMap = collections.reduce((acc, collection) => {
-    acc[collection.id] = collection.name;
-    return acc;
-  }, {});
+      return (
+        matchesSearch &&
+        matchesMethod &&
+        matchesCollection
+      );
+    });
+  }, [
+    endpoints,
+    search,
+    methodFilter,
+    collectionFilter,
+  ]);
 
-  const location = useLocation();
+  // ============================================================
+  // PAGINATION
+  // ============================================================
 
-  const [highlightedId, setHighlightedId] = useState(
-    location.state?.highlightEndpointId
+  const totalPages = Math.max(
+    1,
+    Math.ceil(
+      filteredEndpoints.length /
+        ITEMS_PER_PAGE
+    )
   );
+
+  const paginatedEndpoints = useMemo(() => {
+    const startIndex =
+      (currentPage - 1) *
+      ITEMS_PER_PAGE;
+
+    return filteredEndpoints.slice(
+      startIndex,
+      startIndex + ITEMS_PER_PAGE
+    );
+  }, [
+    filteredEndpoints,
+    currentPage,
+  ]);
+
+  // ============================================================
+  // RESET PAGE WHEN SEARCH/FILTER CHANGES
+  // ============================================================
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    search,
+    methodFilter,
+    collectionFilter,
+  ]);
+
+  // ============================================================
+  // KEEP PAGE VALID AFTER DELETE
+  // ============================================================
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  // ============================================================
+  // OPEN ENDPOINT FROM URL
+  // ============================================================
+
+  useEffect(() => {
+    if (!expandId || endpoints.length === 0) {
+      return;
+    }
+
+    const endpointIndex =
+      filteredEndpoints.findIndex(
+        (endpoint) =>
+          endpoint.id === expandId
+      );
+
+    if (endpointIndex === -1) {
+      return;
+    }
+
+    const page =
+      Math.floor(
+        endpointIndex / ITEMS_PER_PAGE
+      ) + 1;
+
+    setCurrentPage(page);
+    setExpandedEndpointId(expandId);
+  }, [
+    expandId,
+    endpoints,
+    filteredEndpoints,
+  ]);
+
+  // ============================================================
+  // HIGHLIGHTED ENDPOINT
+  // ============================================================
 
   useEffect(() => {
     if (!highlightedId) return;
@@ -181,27 +299,48 @@ function ApiBuilder() {
     return () => clearTimeout(timer);
   }, [highlightedId]);
 
+  // ============================================================
+  // COLLECTION MAP
+  // ============================================================
+
+  const collectionMap = collections.reduce(
+    (acc, collection) => {
+      acc[collection.id] =
+        collection.name;
+
+      return acc;
+    },
+    {}
+  );
+
+  // ============================================================
+  // LOADING
+  // ============================================================
+
   if (loading) {
-    return <LoadingSpinner/>
+    return <LoadingSpinner />;
   }
+
+  // ============================================================
+  // UI
+  // ============================================================
 
   return (
     <div className="space-y-6">
 
       {/* Header */}
 
-      <div className="flex items-start justify-between bg-slate-100 p-8 rounded-2xl shadow-sm">
+      <div className="flex items-start justify-between rounded-2xl bg-slate-100 p-8 shadow-sm">
 
         <div>
-
           <h1 className="text-4xl font-bold tracking-tight text-slate-900">
             API Builder
           </h1>
 
           <p className="text-slate-500">
-            Manage the mock endpoints exposed by your server.
+            Manage the mock endpoints exposed by
+            your server.
           </p>
-
         </div>
 
         <Button
@@ -225,33 +364,61 @@ function ApiBuilder() {
           setSearch={setSearch}
           methodFilter={methodFilter}
           setMethodFilter={setMethodFilter}
-          collectionFilter={collectionFilter}
-          setCollectionFilter={setCollectionFilter}
+          collectionFilter={
+            collectionFilter
+          }
+          setCollectionFilter={
+            setCollectionFilter
+          }
           collections={collections}
         />
 
       </div>
 
-      {/* Table */}
+      {/* Endpoint Table */}
 
       <EndpointTable
-        endpoints={filteredEndpoints}
+        endpoints={paginatedEndpoints}
         highlightedId={highlightedId}
-        expandedEndpointId={expandedEndpointId}
-        onToggleExpand={toggleExpand}
+        expandedEndpointId={
+          expandedEndpointId
+        }
+        onToggleExpand={
+          setExpandedEndpointId
+        }
         collectionMap={collectionMap}
         onEdit={(endpoint) => {
           setEditingEndpoint(endpoint);
           setShowForm(true);
         }}
-        onDelete={(endpoint) => setDeleteEndpoint(endpoint)}
+        onDelete={(endpoint) =>
+          setDeleteEndpoint(endpoint)
+        }
         onCreate={() => {
           setEditingEndpoint(null);
           setShowForm(true);
         }}
+        onCloseDetails={() =>
+          setExpandedEndpointId(null)
+        }
       />
 
-      {/* Form */}
+      {/* Pagination */}
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={
+          filteredEndpoints.length
+        }
+        itemsPerPage={ITEMS_PER_PAGE}
+        onPageChange={(page) => {
+          setCurrentPage(page);
+          setExpandedEndpointId(null);
+        }}
+      />
+
+      {/* Endpoint Form */}
 
       <Modal
         open={showForm}
@@ -282,7 +449,9 @@ function ApiBuilder() {
         open={!!deleteEndpoint}
         message={`Are you sure you want to delete "${deleteEndpoint?.path}"?`}
         onConfirm={handleDelete}
-        onCancel={() => setDeleteEndpoint(null)}
+        onCancel={() =>
+          setDeleteEndpoint(null)
+        }
       />
 
     </div>

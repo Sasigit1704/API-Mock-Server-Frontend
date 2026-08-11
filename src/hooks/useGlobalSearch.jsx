@@ -7,6 +7,7 @@ export default function useGlobalSearch(searchTerm) {
     collections: [],
     environments: [],
     scenarios: [],
+    requestHistory: [],
   });
 
   useEffect(() => {
@@ -25,63 +26,88 @@ export default function useGlobalSearch(searchTerm) {
         collections: [],
         environments: [],
         scenarios: [],
+        requestHistory: [],
       };
     }
 
-    const keyword = searchTerm.toLowerCase();
+    const keyword = searchTerm.toLowerCase().trim();
 
     return {
-      endpoints: data.endpoints.filter((item) =>
-        [
-          item.name,
-          item.path,
-          item.method,
-          String(item.statusCode),
-          item.responseBody,
-          item.isEnabled ? "enabled" : "disabled",
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(keyword)
-      ),
+      endpoints: data.endpoints
+        .filter((item) =>
+          [
+            item.name,
+            item.path,
+            item.method,
+            String(item.statusCode),
+            item.responseBody,
+            item.isEnabled ? "enabled" : "disabled",
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(keyword)
+        )
+        .slice(0, 5),
 
-      collections: data.collections.filter((item) =>
-        [
-          item.name,
-          item.description,
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(keyword)
-      ),
+      collections: data.collections
+        .filter((item) =>
+          [
+            item.name,
+            item.description,
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(keyword)
+        )
+        .slice(0, 5),
 
-      environments: data.environments.filter((item) =>
-        [
-          item.name,
-          item.baseUrl,
-          item.description,
-          item.isActive ? "active" : "inactive",
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(keyword)
-      ),
+      environments: data.environments
+        .filter((item) =>
+          [
+            item.name,
+            item.baseUrl,
+            item.description,
+            item.isActive ? "active" : "inactive",
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(keyword)
+        )
+        .slice(0, 5),
 
-      scenarios: data.scenarios.filter((item) => {
-        const searchableText = [
-          item.scenarioName,
-          String(item.statusCode),
-          item.responseBody,
-          String(item.delay),
-          String(item.timeoutDelay),
-          item.enableTimeout ? "timeout" : "",
-          item.enableRandomFailure ? "failure" : "",
-          item.isActive ? "active" : "inactive",
-        ]
-          .join(" ")
-          .toLowerCase()
-        return searchableText.includes(keyword);
-      }),
+      scenarios: data.scenarios
+        .filter((item) =>
+          [
+            item.scenarioName,
+            String(item.statusCode),
+            item.responseBody,
+            String(item.delay),
+            String(item.timeoutDelay),
+            item.enableTimeout ? "timeout" : "",
+            item.enableRandomFailure ? "failure" : "",
+            item.isActive ? "active" : "inactive",
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(keyword)
+        )
+        .slice(0, 5),
+
+      requestHistory: data.requestHistory
+        .filter((item) =>
+          [
+            item.method,
+            item.path,
+            String(item.statusCode),
+            String(item.responseTimeMs),
+            item.endpointName ?? "",
+            item.scenarioName ?? "",
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(keyword)
+        )
+        .slice(0, 5),
     };
   }, [searchTerm, data]);
 

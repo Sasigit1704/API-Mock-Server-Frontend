@@ -1,70 +1,114 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
 import {
   RefreshCw,
   History,
   Trash2,
+  Download,
 } from "lucide-react";
 
 import RequestDetailsModal from "./RequestHistoryModal";
+
 import Button from "../../components/ui/Button";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
+import Pagination from "../../components/ui/Pagination";
 
 import {
   getRequestHistory,
   clearRequestHistory,
   deleteRequestHistory,
+  exportRequestHistoryCsv,
+  exportRequestHistoryJson,
 } from "../../services/requestHistoryService";
 
 import RequestHistoryStats from "./RequestHistoryStats";
 import RequestHistoryToolbar from "./RequestHistoryToolbar";
 import RequestHistoryTable from "./RequestHistoryTable";
 
+const ITEMS_PER_PAGE = 10;
+
 function RequestHistory() {
   const [logs, setLogs] = useState([]);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] =
+    useState(false);
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] =
+    useState("");
 
-  const [methodFilter, setMethodFilter] = useState("");
+  const [methodFilter, setMethodFilter] =
+    useState("");
 
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] =
+    useState("");
 
-  const [showClearDialog, setShowClearDialog] = useState(false);
+  const [showClearDialog, setShowClearDialog] =
+    useState(false);
 
-  const [selectedLog, setSelectedLog] = useState(null);
-  
-  const [deleteLog, setDeleteLog] = useState(null);
+  const [selectedLog, setSelectedLog] =
+    useState(null);
 
-  const loadHistory = useCallback(async () => {
-    setLoading(true);
+  const [deleteLog, setDeleteLog] =
+    useState(null);
 
-    try {
-      const data = await getRequestHistory();
+  const [currentPage, setCurrentPage] =
+    useState(1);
 
-      setLogs(data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // ============================================================
+  // LOAD HISTORY
+  // ============================================================
+
+  const loadHistory = useCallback(
+    async () => {
+      setLoading(true);
+
+      try {
+        const data =
+          await getRequestHistory();
+
+        setLogs(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     loadHistory();
   }, [loadHistory]);
 
+  // ============================================================
+  // DELETE
+  // ============================================================
+
   const handleDelete = async () => {
     if (!deleteLog) return;
+
     try {
-      await deleteRequestHistory(deleteLog.id);
+      await deleteRequestHistory(
+        deleteLog.id
+      );
+
       await loadHistory();
+
       setDeleteLog(null);
     } catch (error) {
       console.error(error);
     }
   };
+
+  // ============================================================
+  // CLEAR HISTORY
+  // ============================================================
 
   const handleClearHistory = async () => {
     try {
@@ -73,10 +117,18 @@ function RequestHistory() {
       await loadHistory();
 
       setShowClearDialog(false);
+      setCurrentPage(1);
     } catch (error) {
       console.error(error);
     }
   };
+
+  // ============================================================
+  // FILTER
+  //
+  // IMPORTANT:
+  // Search happens across ALL logs before pagination.
+  // ============================================================
 
   const filteredLogs = useMemo(() => {
     return logs.filter((log) => {
@@ -85,13 +137,18 @@ function RequestHistory() {
         log.path,
         String(log.statusCode),
         log.ipAddress,
+        log.endpointName,
+        log.scenarioName,
       ]
+        .filter(Boolean)
         .join(" ")
         .toLowerCase();
 
-      const matchesSearch = text.includes(
-        search.toLowerCase()
-      );
+      const matchesSearch =
+        search.trim() === "" ||
+        text.includes(
+          search.trim().toLowerCase()
+        );
 
       const matchesMethod =
         methodFilter === "" ||
@@ -99,7 +156,8 @@ function RequestHistory() {
 
       const matchesStatus =
         statusFilter === "" ||
-        String(log.statusCode) === statusFilter;
+        String(log.statusCode) ===
+          statusFilter;
 
       return (
         matchesSearch &&
@@ -107,11 +165,75 @@ function RequestHistory() {
         matchesStatus
       );
     });
-  }, [logs, search, methodFilter, statusFilter]);
+  }, [
+    logs,
+    search,
+    methodFilter,
+    statusFilter,
+  ]);
+
+  // ============================================================
+  // RESET PAGE WHEN FILTERING
+  // ============================================================
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    search,
+    methodFilter,
+    statusFilter,
+  ]);
+
+  // ============================================================
+  // PAGINATION
+  // ============================================================
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(
+      filteredLogs.length /
+        ITEMS_PER_PAGE
+    )
+  );
+
+  const paginatedLogs = useMemo(() => {
+    const startIndex =
+      (currentPage - 1) *
+      ITEMS_PER_PAGE;
+
+    return filteredLogs.slice(
+      startIndex,
+      startIndex + ITEMS_PER_PAGE
+    );
+  }, [
+    filteredLogs,
+    currentPage,
+  ]);
+
+  // ============================================================
+  // KEEP PAGE VALID
+  // ============================================================
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [
+    currentPage,
+    totalPages,
+  ]);
+
+  // ============================================================
+  // LOADING
+  // ============================================================
 
   if (loading) {
     return <LoadingSpinner />;
   }
+
+  // ============================================================
+  // UI
+  // ============================================================
 
   return (
     <div className="space-y-6">
@@ -142,7 +264,7 @@ function RequestHistory() {
 
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
 
           <Button
             variant="secondary"
@@ -152,8 +274,33 @@ function RequestHistory() {
               size={18}
               className="mr-2"
             />
-
             Refresh
+          </Button>
+
+          <Button
+            variant="secondary"
+            onClick={
+              exportRequestHistoryJson
+            }
+          >
+            <Download
+              size={18}
+              className="mr-2"
+            />
+            Export JSON
+          </Button>
+
+          <Button
+            variant="secondary"
+            onClick={
+              exportRequestHistoryCsv
+            }
+          >
+            <Download
+              size={18}
+              className="mr-2"
+            />
+            Export CSV
           </Button>
 
           <Button
@@ -166,12 +313,10 @@ function RequestHistory() {
               size={18}
               className="mr-2"
             />
-
             Clear History
           </Button>
 
         </div>
-
       </div>
 
       {/* Statistics */}
@@ -188,9 +333,13 @@ function RequestHistory() {
           search={search}
           setSearch={setSearch}
           methodFilter={methodFilter}
-          setMethodFilter={setMethodFilter}
+          setMethodFilter={
+            setMethodFilter
+          }
           statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
+          setStatusFilter={
+            setStatusFilter
+          }
         />
 
       </div>
@@ -198,17 +347,35 @@ function RequestHistory() {
       {/* Table */}
 
       <RequestHistoryTable
-        logs={filteredLogs}
+        logs={paginatedLogs}
         onView={setSelectedLog}
         onRefresh={loadHistory}
-        onDelete={(log) => setDeleteLog(log)}
+        onDelete={(log) =>
+          setDeleteLog(log)
+        }
       />
+
+      {/* Pagination */}
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={filteredLogs.length}
+        itemsPerPage={ITEMS_PER_PAGE}
+        onPageChange={setCurrentPage}
+      />
+
+      {/* Request Details */}
 
       <RequestDetailsModal
         open={!!selectedLog}
         log={selectedLog}
-        onClose={() => setSelectedLog(null)}
+        onClose={() =>
+          setSelectedLog(null)
+        }
       />
+
+      {/* Clear */}
 
       <ConfirmDialog
         open={showClearDialog}
@@ -218,13 +385,16 @@ function RequestHistory() {
           setShowClearDialog(false)
         }
       />
+
       {/* Delete */}
 
       <ConfirmDialog
         open={!!deleteLog}
         message={`Are you sure you want to delete "${deleteLog?.path}"?`}
         onConfirm={handleDelete}
-        onCancel={() => setDeleteLog(null)}
+        onCancel={() =>
+          setDeleteLog(null)
+        }
       />
 
     </div>

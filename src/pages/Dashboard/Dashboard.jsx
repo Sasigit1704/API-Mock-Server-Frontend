@@ -38,6 +38,22 @@ function Dashboard() {
 
   useEffect(() => {
     loadDashboard();
+
+    const handleEnvironmentChanged = () => {
+      loadDashboard();
+    };
+
+    window.addEventListener(
+      "environmentChanged",
+      handleEnvironmentChanged
+    );
+
+    return () => {
+      window.removeEventListener(
+        "environmentChanged",
+        handleEnvironmentChanged
+      );
+    };
   }, []);
 
   const loadDashboard = async () => {
@@ -162,12 +178,19 @@ function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6 items-stretch">
         {/* Recent Endpoints */}
         <div>
-          <Card className="h-full flex flex-col">
-            <h2 className="mb-4 text-xl font-semibold">
-              Recent Endpoints
-            </h2>
+          <Card className="h-[600px] flex flex-col">
 
-            <div className="space-y-4">
+            <div className="mb-5">
+              <h2 className="text-xl font-semibold">
+                Recent Endpoints
+              </h2>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Latest endpoints created in your workspace.
+              </p>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-4 pr-2">
               {recentEndpoints.length === 0 ? (
                 <p className="text-sm text-slate-500">
                   No endpoints available.
@@ -185,13 +208,14 @@ function Dashboard() {
                         rounded-xl
                         border border-slate-200
                         p-4
-                        transition
+                        transition-all
                         hover:border-blue-300
-                        hover:shadow-sm
                         hover:bg-slate-50
+                        hover:shadow-sm
                       "
                     >
                       <div className="flex items-center gap-4">
+
                         <Badge variant={endpoint.method.toLowerCase()}>
                           {endpoint.method}
                         </Badge>
@@ -199,6 +223,7 @@ function Dashboard() {
                         <span className="font-medium text-slate-800">
                           {endpoint.path}
                         </span>
+
                       </div>
 
                       <ArrowRight
@@ -210,32 +235,42 @@ function Dashboard() {
                 ))
               )}
             </div>
+
+            <div className="mt-6 border-t pt-4">
+              <Button
+                variant="secondary"
+                className="w-full"
+                onClick={() => navigate("/builder")}
+              >
+                View All Endpoints
+              </Button>
+            </div>
+
           </Card>
         </div>
 
         {/* Recent Requests */}
         <div>
-          <Card className="h-full flex flex-col">
-            <div className="flex items-center justify-between mb-6">
+          <Card className="h-[600px] flex flex-col">
+
+            <div className="mb-5">
               <h2 className="text-xl font-semibold">
                 Recent Requests
               </h2>
 
-              <Button
-                variant="secondary"
-                onClick={() => navigate("/history")}
-              >
-                View All
-              </Button>
+              <p className="mt-1 text-sm text-slate-500">
+                Latest mock API executions.
+              </p>
             </div>
 
-            {recentRequests.length === 0 ? (
-              <p className="text-sm text-slate-500">
-                No requests have been executed yet.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {recentRequests.map((request) => (
+            <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+
+              {recentRequests.length === 0 ? (
+                <p className="text-sm text-slate-500">
+                  No requests have been executed yet.
+                </p>
+              ) : (
+                recentRequests.map((request) => (
                   <div
                     key={request.id}
                     className="
@@ -243,17 +278,15 @@ function Dashboard() {
                       rounded-xl
                       border border-slate-200
                       p-4
-                      transition
+                      transition-all
                       hover:border-blue-300
-                      hover:shadow-sm
                       hover:bg-slate-50
+                      hover:shadow-sm
                     "
                   >
                     <div className="flex items-center gap-4">
 
-                      <Badge
-                        variant={request.method.toLowerCase()}
-                      >
+                      <Badge variant={request.method.toLowerCase()}>
                         {request.method}
                       </Badge>
 
@@ -274,21 +307,44 @@ function Dashboard() {
                             }
                           )}
                         </p>
+
                       </div>
+
                     </div>
 
-                    <div className="flex items-center gap-4">
-                      <Badge variant={request.statusCode >= 400 ? "error" : "success"}>
+                    <div className="flex items-center gap-3">
+
+                      <Badge
+                        variant={
+                          request.statusCode >= 400
+                            ? "error"
+                            : "success"
+                        }
+                      >
                         {request.statusCode}
                       </Badge>
+
                       <Badge variant="info">
                         {request.responseTimeMs} ms
                       </Badge>
+
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
+                ))
+              )}
+
+            </div>
+
+            <div className="mt-6 border-t pt-4">
+              <Button
+                variant="secondary"
+                className="w-full"
+                onClick={() => navigate("/history")}
+              >
+                View Full Request History
+              </Button>
+            </div>
+
           </Card>
         </div>
       </div>

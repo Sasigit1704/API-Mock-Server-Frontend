@@ -13,7 +13,6 @@ function ScenarioTable({
   onActivate,
   onCreate,
 }) {
-
   const rowRefs = useRef({});
 
   useEffect(() => {
@@ -49,7 +48,7 @@ function ScenarioTable({
         "Delay",
         "Timeout",
         "Failure",
-        "Actions",
+        "Edit | Activate | Delete",
       ]}
     >
       {scenarios.map((scenario) => (
@@ -161,11 +160,15 @@ function ScenarioTable({
           {/* Actions */}
 
           <td className="px-8 py-5">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-8">
+
+              {/* Edit */}
 
               <button
+                type="button"
                 onClick={() => onEdit(scenario)}
                 className="rounded-full p-2 transition hover:bg-blue-100"
+                title="Edit Scenario"
               >
                 <Pencil
                   size={18}
@@ -173,18 +176,20 @@ function ScenarioTable({
                 />
               </button>
 
+              {/* Activate / Deactivate */}
+
               <button
-                disabled={scenario.isActive}
+                type="button"
                 onClick={() => onActivate(scenario)}
                 className={`rounded-full p-2 transition ${
                   scenario.isActive
-                    ? "cursor-not-allowed opacity-40"
+                    ? "hover:bg-red-100"
                     : "hover:bg-yellow-100"
                 }`}
                 title={
                   scenario.isActive
-                    ? "Already Active"
-                    : "Set Active"
+                    ? "Deactivate Scenario"
+                    : "Activate Scenario"
                 }
               >
                 <Star
@@ -197,9 +202,13 @@ function ScenarioTable({
                 />
               </button>
 
+              {/* Delete */}
+
               <button
+                type="button"
                 onClick={() => onDelete(scenario)}
                 className="rounded-full p-2 transition hover:bg-red-100"
+                title="Delete Scenario"
               >
                 <Trash2
                   size={18}

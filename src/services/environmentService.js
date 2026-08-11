@@ -35,3 +35,15 @@ export const deleteEnvironment = async (id) => {
   const { data } = await api.delete(`/Environment/${id}`);
   return data;
 };
+
+// Activate environment
+export const activateEnvironment = async (id) => {
+  const { data } = await api.patch(`/Environment/${id}/activate`);
+  return data;
+};
+
+// Get Active environment
+export const getActiveEnvironment = async () => {
+  const environments = await getEnvironments();
+  return environments.find((e) => e.isActive);
+};

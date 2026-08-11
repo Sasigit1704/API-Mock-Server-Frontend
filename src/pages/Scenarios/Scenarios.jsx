@@ -100,10 +100,9 @@ function Scenarios() {
   };
 
   const handleActivate = async (scenario) => {
-    if (scenario.isActive) return;
     try {
       await patchMockScenario(scenario.id, {
-        isActive: true,
+        isActive: !scenario.isActive,
       });
 
       await loadScenarios();

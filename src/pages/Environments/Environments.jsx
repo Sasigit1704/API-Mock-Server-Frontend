@@ -71,12 +71,19 @@ function Environments() {
 
   const handleActivate = async (environment) => {
     if (environment.isActive) return;
+
     try {
-        await patchEnvironment(environment.id, {isActive: true,});
-        await loadEnvironments();
+      await patchEnvironment(environment.id, {
+        isActive: true,
+      });
+
+      await loadEnvironments();
+
+      window.dispatchEvent(new Event("environmentChanged"));
+
     } catch (error) {
-        console.error(error);
-      }
+      console.error(error);
+    }
   };
 
   const handleDelete = async () => {

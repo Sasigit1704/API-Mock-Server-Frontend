@@ -7,11 +7,13 @@ export async function getSearchData() {
       collections,
       environments,
       scenarios,
+      requestHistory,
     ] = await Promise.all([
       api.get("/MockEndpoints"),
       api.get("/Collections"),
       api.get("/Environment"),
       api.get("/MockScenarios"),
+      api.get("/RequestHistory"),
     ]);
 
     return {
@@ -19,6 +21,7 @@ export async function getSearchData() {
       collections: collections.data,
       environments: environments.data,
       scenarios: scenarios.data,
+      requestHistory: requestHistory.data,
     };
   } catch (error) {
     console.error("Failed to fetch search data:", error);
@@ -28,10 +31,11 @@ export async function getSearchData() {
       collections: [],
       environments: [],
       scenarios: [],
+      requestHistory: [],
     };
   }
 }
 
 export async function refreshSearchData() {
-    return getSearchData();
+  return getSearchData();
 }

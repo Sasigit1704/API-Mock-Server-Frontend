@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useGlobalSearch from "../../hooks/useGlobalSearch";
+import Badge from "../ui/Badge"
 
 function GlobalSearch() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -12,13 +13,15 @@ function GlobalSearch() {
     collections,
     environments,
     scenarios,
+    requestHistory,
   } = useGlobalSearch(searchTerm);
 
   const totalResults =
     endpoints.length +
     collections.length +
     environments.length +
-    scenarios.length;
+    scenarios.length +
+    requestHistory.length;
 
   return (
     <div className="relative w-[420px]">
@@ -30,8 +33,13 @@ function GlobalSearch() {
 
       <input
         value={searchTerm}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            setSearchTerm("");
+          }
+        }}
         onChange={(e) => setSearchTerm(e.target.value)}
-        placeholder="Search endpoints, collections..."
+        placeholder="Search anything..."
         className="
           w-full
           h-12
@@ -62,15 +70,27 @@ function GlobalSearch() {
           "
         >
           {totalResults === 0 && (
-            <p className="p-4 text-slate-500">
-              No results found.
-            </p>
+            <div className="p-8 text-center">
+              <Search
+                size={30}
+                className="mx-auto mb-3 text-slate-300"
+              />
+
+              <p className="font-semibold text-slate-700">
+                No matching results
+              </p>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Try searching by endpoint name,
+                path, collection or scenario.
+              </p>
+            </div>
           )}
 
           {endpoints.length > 0 && (
             <>
               <div className="px-4 pt-4 pb-2 text-xs font-bold uppercase text-slate-400">
-                Endpoints
+                Endpoints ({endpoints.length})
               </div>
 
               {endpoints.map((item) => (
@@ -89,22 +109,9 @@ function GlobalSearch() {
                 >
                   <div className="flex items-center gap-2">
 
-                    <span
-                      className={`rounded px-2 py-0.5 text-xs font-bold text-white
-                        ${
-                          item.method === "GET"
-                            ? "bg-green-500"
-                            : item.method === "POST"
-                            ? "bg-blue-500"
-                            : item.method === "PUT"
-                            ? "bg-yellow-500"
-                            : item.method === "PATCH"
-                            ? "bg-purple-500"
-                            : "bg-red-500"
-                        }`}
-                    >
+                    <Badge variant={item.method.toLowerCase()}>
                       {item.method}
-                    </span>
+                    </Badge>
 
                     <span className="font-semibold">
                       {item.name}
@@ -133,7 +140,7 @@ function GlobalSearch() {
           {collections.length > 0 && (
             <>
               <div className="px-4 pt-4 pb-2 text-xs font-bold uppercase text-slate-400">
-                Collections
+                Collections ({collections.length})
               </div>
 
               {collections.map((item) => (
@@ -165,7 +172,7 @@ function GlobalSearch() {
           {environments.length > 0 && (
             <>
               <div className="px-4 pt-4 pb-2 text-xs font-bold uppercase text-slate-400">
-                Environments
+                Environments ({environments.length})
               </div>
 
               {environments.map((item) => (
@@ -201,7 +208,7 @@ function GlobalSearch() {
           {scenarios.length > 0 && (
             <>
               <div className="px-4 pt-4 pb-2 text-xs font-bold uppercase text-slate-400">
-                Scenarios
+                Scenarios ({scenarios.length})
               </div>
 
               {scenarios.map((item) => (
@@ -252,6 +259,52 @@ function GlobalSearch() {
                     <span>
                       {item.isActive ? "Active" : "Inactive"}
                     </span>
+
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+
+          {requestHistory.length > 0 && (
+            <>
+              <div className="px-4 pt-4 pb-2 text-xs font-bold uppercase text-slate-400">
+                Request History ({requestHistory.length})
+              </div>
+
+              {requestHistory.map((item) => (
+                <div
+                  key={item.id}
+                  className="cursor-pointer border-b border-slate-100 px-4 py-3 transition hover:bg-slate-50"
+                  onClick={() => {
+                    navigate("/history", {
+                      state: {
+                        highlightRequestId: item.id,
+                      },
+                    });
+
+                    setSearchTerm("");
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+
+                    <Badge variant={item.method.toLowerCase()}>
+                      {item.method}
+                    </Badge>
+
+                    <span className="font-mono">
+                      {item.path}
+                    </span>
+
+                  </div>
+
+                  <div className="mt-2 flex gap-2 text-xs text-slate-500">
+
+                    <span>Status {item.statusCode}</span>
+
+                    <span>•</span>
+
+                    <span>{item.responseTimeMs} ms</span>
 
                   </div>
                 </div>

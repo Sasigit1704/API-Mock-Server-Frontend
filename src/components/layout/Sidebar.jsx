@@ -2,8 +2,9 @@ import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   Server,
+  Terminal,
   FolderKanban,
-  //Workflow,
+  Workflow,
   Globe,
   History,
   FileCode2,
@@ -24,6 +25,11 @@ const activePages = [
     icon: Server,
   },
   {
+    title: "API Tester",
+    path: "/api-tester",
+    icon: Terminal,
+  },
+  {
     title: "Collections",
     path: "/collections",
     icon: FolderKanban,
@@ -33,11 +39,11 @@ const activePages = [
     path: "/environment",
     icon: Globe,
   },
-  /*{
+  {
     title: "Scenarios",
     path: "/scenarios",
     icon: Workflow,
-  },*/
+  },
   {
     title: "Request History",
     path: "/history",

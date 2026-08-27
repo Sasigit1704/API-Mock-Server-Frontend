@@ -51,14 +51,14 @@ function Collections() {
     const handleSave = async (formData) => {
         try {
             if (editingCollection) {
-                await updateCollection(
-                    editingCollection.id,
-                    formData
-                );
+                await updateCollection(editingCollection.id, formData);
             } else {
                 await createCollection(formData);
             }
+            
+            // Re-load fresh from backend to get correct property casing
             await loadCollections();
+            
             setShowForm(false);
             setEditingCollection(null);
         } catch (error) {
@@ -70,7 +70,8 @@ function Collections() {
         if (!deleteCollectionItem) return;
         try {
             await deleteCollection(deleteCollectionItem.id);
-            await loadCollections();
+            // Filter out locally without jumping scroll
+            setCollections((prev) => prev.filter((col) => col.id !== deleteCollectionItem.id));
             setDeleteCollectionItem(null);
         } catch (error) {
             console.error(error);

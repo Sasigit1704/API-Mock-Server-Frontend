@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Play,
   Code2,
@@ -28,9 +29,7 @@ function buildPreviewUrl(path, pathParams, queryParams) {
     .filter((item) => item.name.trim())
     .map(
       (item) =>
-        `${encodeURIComponent(item.name.trim())}=${encodeURIComponent(
-          item.value ?? ""
-        )}`
+        `${encodeURIComponent(item.name.trim())}=${encodeURIComponent(item.value ?? "")}`
     )
     .join("&");
 
@@ -47,16 +46,19 @@ function RequestEditor({
   setPathParams,
   queryParams,
   setQueryParams,
+  headers,
+  setHeaders,
   onSend,
   loading,
 }) {
+  const [jsonError, setJsonError] = useState("");
+
   const formatJson = () => {
     try {
-      setRequestBody(
-        JSON.stringify(JSON.parse(requestBody || "{}"), null, 2)
-      );
+      setRequestBody(JSON.stringify(JSON.parse(requestBody || "{}"), null, 2));
+      setJsonError("");
     } catch {
-      alert("Invalid JSON");
+      setJsonError("Invalid JSON. Please correct the request body before formatting.");
     }
   };
 
@@ -65,6 +67,8 @@ function RequestEditor({
     setAuthToken("");
     setPathParams({});
     setQueryParams([]);
+    setHeaders([]);
+    setJsonError("");
   };
 
   const methodColors = {
@@ -103,12 +107,7 @@ function RequestEditor({
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-slate-900">Request</h2>
-        <Button
-          variant="secondary"
-          type="button"
-          onClick={clearRequest}
-          disabled={!selectedEndpoint}
-        >
+        <Button variant="secondary" type="button" onClick={clearRequest} disabled={!selectedEndpoint}>
           Clear
         </Button>
       </div>
@@ -119,8 +118,7 @@ function RequestEditor({
             <AlertCircle size={42} className="mx-auto text-slate-300" />
             <p className="mt-4 font-semibold text-slate-600">Select an endpoint</p>
             <p className="mt-2 text-sm text-slate-500">
-              Choose an endpoint above to configure and send a real request
-              against your mock server.
+              Choose an endpoint above to configure and send a real request against your mock server.
             </p>
           </div>
         </div>
@@ -128,25 +126,15 @@ function RequestEditor({
         <div className="mt-6 space-y-5">
           <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
             <div className="flex flex-wrap items-center gap-3">
-              <span
-                className={`rounded-lg px-3 py-1.5 text-sm font-semibold text-white ${
-                  methodColors[method] || "bg-slate-500"
-                }`}
-              >
+              <span className={`rounded-lg px-3 py-1.5 text-sm font-semibold text-white ${methodColors[method] || "bg-slate-500"}`}>
                 {method}
               </span>
-              <span className="font-semibold text-slate-900">
-                {selectedEndpoint.name}
-              </span>
-              <Badge
-                variant={selectedEndpoint.isEnabled ? "success" : "secondary"}
-              >
+              <span className="font-semibold text-slate-900">{selectedEndpoint.name}</span>
+              <Badge variant={selectedEndpoint.isEnabled ? "success" : "secondary"}>
                 {selectedEndpoint.isEnabled ? "Enabled" : "Disabled"}
               </Badge>
             </div>
-            <div className="mt-3 break-all font-mono text-sm text-slate-600">
-              {previewUrl}
-            </div>
+            <div className="mt-3 break-all font-mono text-sm text-slate-600">{previewUrl}</div>
           </div>
 
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -171,18 +159,14 @@ function RequestEditor({
             <div className="rounded-lg border border-slate-200 p-3">
               <p className="text-xs text-slate-500">Response Mode</p>
               <p className="mt-1 text-sm font-semibold">
-                {selectedEndpoint.enablePercentageBasedResponses
-                  ? "Percentage"
-                  : "Single"}
+                {selectedEndpoint.enablePercentageBasedResponses ? "Percentage" : "Single"}
               </p>
             </div>
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              URL
-            </label>
-            <div className="rounded-xl border border-slate-300 bg-slate-100 px-4 py-3 font-mono text-sm text-slate-700 break-all">
+            <label className="mb-2 block text-sm font-medium text-slate-700">URL</label>
+            <div className="break-all rounded-xl border border-slate-300 bg-slate-100 px-4 py-3 font-mono text-sm text-slate-700">
               {previewUrl}
             </div>
             <p className="mt-1 text-xs text-slate-500">
@@ -193,9 +177,7 @@ function RequestEditor({
           {pathParameterNames.length > 0 && (
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <div className="mb-3">
-                <h3 className="text-sm font-semibold text-slate-800">
-                  Path Parameters
-                </h3>
+                <h3 className="text-sm font-semibold text-slate-800">Path Parameters</h3>
                 <p className="mt-1 text-xs text-slate-500">
                   Values are automatically inserted into the endpoint path.
                 </p>
@@ -203,16 +185,11 @@ function RequestEditor({
               <div className="space-y-3">
                 {pathParameterNames.map((name) => (
                   <div key={name}>
-                    <label className="mb-1 block text-xs font-medium text-slate-600">
-                      {name}
-                    </label>
+                    <label className="mb-1 block text-xs font-medium text-slate-600">{name}</label>
                     <input
                       value={pathParams?.[name] || ""}
                       onChange={(e) =>
-                        setPathParams((prev) => ({
-                          ...prev,
-                          [name]: e.target.value,
-                        }))
+                        setPathParams((prev) => ({ ...prev, [name]: e.target.value }))
                       }
                       placeholder={`Enter ${name}`}
                       className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 font-mono text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
@@ -226,44 +203,31 @@ function RequestEditor({
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <div className="mb-3 flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-semibold text-slate-800">
-                  Query Parameters
-                </h3>
+                <h3 className="text-sm font-semibold text-slate-800">Query Parameters</h3>
                 <p className="mt-1 text-xs text-slate-500">
                   Add query values such as <span className="font-mono">name=Sasi</span>.
                 </p>
               </div>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={addQueryParameter}
-              >
-                <Plus size={16} className="mr-1" />
-                Add
+              <Button type="button" variant="secondary" onClick={addQueryParameter}>
+                <Plus size={16} className="mr-1" /> Add
               </Button>
             </div>
 
             {queryParams.length === 0 ? (
-              <p className="text-xs text-slate-500">
-                No query parameters added.
-              </p>
+              <p className="text-xs text-slate-500">No query parameters added.</p>
             ) : (
               <div className="space-y-3">
                 {queryParams.map((item, index) => (
                   <div key={index} className="flex gap-2">
                     <input
                       value={item.name}
-                      onChange={(e) =>
-                        updateQueryParameter(index, "name", e.target.value)
-                      }
+                      onChange={(e) => updateQueryParameter(index, "name", e.target.value)}
                       placeholder="Parameter name"
                       className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
                     />
                     <input
                       value={item.value}
-                      onChange={(e) =>
-                        updateQueryParameter(index, "value", e.target.value)
-                      }
+                      onChange={(e) => updateQueryParameter(index, "value", e.target.value)}
                       placeholder="Value"
                       className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
                     />
@@ -281,12 +245,71 @@ function RequestEditor({
             )}
           </div>
 
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-800">Headers</h3>
+                <p className="mt-1 text-xs text-slate-500">
+                  Add custom request headers. Authorization is handled separately below.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setHeaders((prev) => [...prev, { name: "", value: "" }])}
+              >
+                <Plus size={16} className="mr-1" /> Add
+              </Button>
+            </div>
+
+            {headers?.length === 0 ? (
+              <p className="text-xs text-slate-500">No custom headers added.</p>
+            ) : (
+              <div className="space-y-3">
+                {headers.map((item, index) => (
+                  <div key={index} className="flex gap-2">
+                    <input
+                      value={item.name}
+                      onChange={(e) =>
+                        setHeaders((prev) =>
+                          prev.map((header, i) =>
+                            i === index ? { ...header, name: e.target.value } : header
+                          )
+                        )
+                      }
+                      placeholder="Header name"
+                      className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                    />
+                    <input
+                      value={item.value}
+                      onChange={(e) =>
+                        setHeaders((prev) =>
+                          prev.map((header, i) =>
+                            i === index ? { ...header, value: e.target.value } : header
+                          )
+                        )
+                      }
+                      placeholder="Value"
+                      className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setHeaders((prev) => prev.filter((_, i) => i !== index))}
+                      className="rounded-xl p-3 text-red-600 hover:bg-red-100"
+                      title="Remove header"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div>
             <div className="mb-2 flex items-center gap-2">
               <Shield size={16} className="text-blue-600" />
-              <label className="text-sm font-medium text-slate-700">
-                Bearer Token
-              </label>
+              <label className="text-sm font-medium text-slate-700">Bearer Token</label>
               {selectedEndpoint.requiresAuthentication ? (
                 <Badge variant="warning">Required</Badge>
               ) : (
@@ -297,18 +320,11 @@ function RequestEditor({
               type="password"
               value={authToken}
               onChange={(e) => setAuthToken(e.target.value)}
-              placeholder={
-                selectedEndpoint.requiresAuthentication
-                  ? "Enter authentication token"
-                  : "Optional token"
-              }
+              placeholder={selectedEndpoint.requiresAuthentication ? "Enter authentication token" : "Optional token"}
               className="w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
             />
             <p className="mt-1 text-xs text-slate-500">
-              The tester sends this as:{" "}
-              <span className="font-mono">
-                Authorization: Bearer &lt;token&gt;
-              </span>
+              The tester sends this as: <span className="font-mono">Authorization: Bearer &lt;token&gt;</span>
             </p>
           </div>
 
@@ -316,23 +332,30 @@ function RequestEditor({
             <div className="mb-2 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Code2 size={16} className="text-blue-600" />
-                <span className="text-sm font-medium text-slate-700">
-                  Request Body
-                </span>
+                <span className="text-sm font-medium text-slate-700">Request Body</span>
               </div>
               <Button variant="secondary" type="button" onClick={formatJson}>
                 Format JSON
               </Button>
             </div>
+
             <textarea
               rows={14}
               value={requestBody}
-              onChange={(e) => setRequestBody(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 bg-slate-900 px-4 py-4 font-mono text-sm text-green-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+              onChange={(e) => {
+                setRequestBody(e.target.value);
+                if (jsonError) setJsonError("");
+              }}
+              className={`w-full rounded-xl border bg-slate-900 px-4 py-4 font-mono text-sm text-green-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 ${
+                jsonError ? "border-red-400" : "border-slate-300"
+              }`}
               placeholder={`{
   "name": "example"
 }`}
             />
+
+            {jsonError && <p className="mt-2 text-sm text-red-600">{jsonError}</p>}
+
             <p className="mt-1 text-xs text-slate-500">
               Enter the request data required by the endpoint's validation rules.
             </p>
@@ -342,13 +365,10 @@ function RequestEditor({
             <div className="flex items-start gap-3">
               <Clock3 size={18} className="mt-0.5 text-blue-600" />
               <div>
-                <p className="text-sm font-semibold text-slate-800">
-                  Test actual mock behavior
-                </p>
+                <p className="text-sm font-semibold text-slate-800">Test actual mock behavior</p>
                 <p className="mt-1 text-xs text-slate-500">
-                  The request is sent to the real mock endpoint, so configured
-                  response selection, delays, authentication, validation,
-                  scenarios, and errors are exercised.
+                  The request is sent to the real mock endpoint, so configured response selection,
+                  delays, authentication, validation, scenarios, and errors are exercised.
                 </p>
               </div>
             </div>

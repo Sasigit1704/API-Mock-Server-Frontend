@@ -11,24 +11,18 @@ function EndpointToolbar({
   collections,
 }) {
   return (
-    <div className="grid grid-cols-12 gap-4 items-center">
-
+    <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
       {/* Search */}
-
-      <div className="col-span-7">
-
+      <div className="w-full sm:flex-1">
         <SearchBar
           placeholder="Search by path..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-
       </div>
 
       {/* Method */}
-
-      <div className="col-span-2">
-
+      <div className="w-full sm:w-48">
         <Select
           value={methodFilter}
           onChange={(e) => setMethodFilter(e.target.value)}
@@ -40,19 +34,15 @@ function EndpointToolbar({
           <option value="PATCH">PATCH</option>
           <option value="DELETE">DELETE</option>
         </Select>
-
       </div>
 
       {/* Collection */}
-
-      <div className="col-span-3">
-
+      <div className="w-full sm:w-56">
         <Select
           value={collectionFilter}
           onChange={(e) => setCollectionFilter(e.target.value)}
         >
           <option value="">All collections</option>
-
           {collections.map((collection) => (
             <option
               key={collection.id}
@@ -61,11 +51,8 @@ function EndpointToolbar({
               {collection.name}
             </option>
           ))}
-
         </Select>
-
       </div>
-
     </div>
   );
 }

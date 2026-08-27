@@ -24,7 +24,7 @@ function GlobalSearch() {
     requestHistory.length;
 
   return (
-    <div className="relative w-[420px]">
+    <div className="relative w-full sm:w-[320px] lg:w-[420px]">
 
       <Search
         size={18}

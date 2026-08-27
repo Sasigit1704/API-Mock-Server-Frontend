@@ -103,6 +103,28 @@ function ResponseForm({
     return Object.keys(newErrors).length === 0;
   };
 
+  const scrollToFirstError = (validationErrors) => {
+    const firstErrorField =
+      Object.keys(validationErrors)[0];
+
+    if (!firstErrorField) {
+      return;
+    }
+
+    const element = document.querySelector(
+      `[name="${firstErrorField}"]`
+    );
+
+    if (element) {
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      element.focus();
+    }
+  };
+
   const handleChange = (e) => {
     const {
       name,
@@ -127,25 +149,39 @@ function ResponseForm({
         [name]: undefined,
       }));
     }
-
-    if (name === "responseBody") {
-      if (
-        value.trim() &&
-        !isValidJson(value)
-      ) {
-        setErrors((prev) => ({
-          ...prev,
-          responseBody:
-            "Response body must contain valid JSON.",
-        }));
-      }
-    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm(form)) {
+      const currentErrors = {};
+
+      if (!form.responseName.trim()) {
+        currentErrors.responseName =
+          "Response name is required.";
+      }
+
+      if (!form.responseBody.trim()) {
+        currentErrors.responseBody =
+          "Response body is required.";
+      } else if (!isValidJson(form.responseBody)) {
+        currentErrors.responseBody =
+          "Response body must contain valid JSON.";
+      }
+
+      const statusCode = Number(form.statusCode);
+
+      if (
+        Number.isNaN(statusCode) ||
+        statusCode < 100 ||
+        statusCode > 599
+      ) {
+        currentErrors.statusCode =
+          "Status code must be between 100 and 599.";
+      }
+
+      scrollToFirstError(currentErrors);
       return;
     }
 
@@ -156,9 +192,17 @@ function ResponseForm({
       percentage < 0 ||
       percentage > 100
     ) {
-      alert(
-        "Response percentage must be between 0 and 100."
-      );
+      const validationErrors = {
+        percentage:
+          "Response percentage must be between 0 and 100.",
+      };
+
+      setErrors((prev) => ({
+        ...prev,
+        ...validationErrors,
+      }));
+
+      scrollToFirstError(validationErrors);
       return;
     }
 
@@ -170,9 +214,17 @@ function ResponseForm({
       responseTimeMs < 0 ||
       responseTimeMs > 300000
     ) {
-      alert(
-        "Response time must be between 0 and 300000 milliseconds."
-      );
+      const validationErrors = {
+        responseTimeMs:
+          "Response time must be between 0 and 300000 milliseconds.",
+      };
+
+      setErrors((prev) => ({
+        ...prev,
+        ...validationErrors,
+      }));
+
+      scrollToFirstError(validationErrors);
       return;
     }
 
@@ -181,8 +233,8 @@ function ResponseForm({
       responseName: form.responseName.trim(),
       statusCode: Number(form.statusCode),
       responseBody: form.responseBody,
-      percentage: percentage,
-      responseTimeMs: responseTimeMs,
+      percentage,
+      responseTimeMs,
       isActive: form.isActive,
     });
   };
@@ -196,8 +248,6 @@ function ResponseForm({
       onSubmit={handleSubmit}
       className="space-y-6"
     >
-      {/* Header */}
-
       <div className="border-b border-slate-200 pb-4">
         <h2 className="text-xl font-semibold text-slate-900">
           {isEditing
@@ -206,12 +256,9 @@ function ResponseForm({
         </h2>
 
         <p className="mt-1 text-sm text-slate-500">
-          Configure the response returned by this
-          mock endpoint.
+          Configure the response returned by this mock endpoint.
         </p>
       </div>
-
-      {/* Response Name */}
 
       <div>
         <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -232,8 +279,6 @@ function ResponseForm({
         )}
       </div>
 
-      {/* Status Code */}
-
       <div>
         <label className="mb-2 block text-sm font-medium text-slate-700">
           HTTP Status Code
@@ -253,8 +298,6 @@ function ResponseForm({
           </p>
         )}
       </div>
-
-      {/* Response Percentage */}
 
       <div>
         <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -277,14 +320,12 @@ function ResponseForm({
             %
           </span>
         </div>
-
-        <p className="mt-1 text-xs text-slate-500">
-          Used only when percentage-based response
-          selection is enabled for the endpoint.
-        </p>
+        {errors.percentage && (
+          <p className="mt-1 text-sm text-red-600">
+            {errors.percentage}
+          </p>
+        )}
       </div>
-
-      {/* Response Time */}
 
       <div>
         <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -307,24 +348,19 @@ function ResponseForm({
             ms
           </span>
         </div>
-
-        <p className="mt-1 text-xs text-slate-500">
-          Simulated processing time for this response.
-          0 ms means no additional response delay.
-        </p>
+        {errors.responseTimeMs && (
+          <p className="mt-1 text-sm text-red-600">
+            {errors.responseTimeMs}
+          </p>
+        )}
       </div>
 
-      {/* Response Body */}
-
       <div>
-        <div className="mb-2 flex items-center justify-between">
+        <div className="mb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
             <label className="text-sm font-medium text-slate-700">
               Response Body
             </label>
-            <p className="mt-1 text-xs text-slate-500">
-              Templates supported: {"{{path.id}}"}, {"{{query.name}}"}, {"{{body.name}}"}, {"{{header.X-Token}}"}.
-            </p>
           </div>
 
           <Badge
@@ -345,9 +381,7 @@ function ResponseForm({
           value={form.responseBody}
           onChange={handleChange}
           rows={12}
-          placeholder={`{
-  "message": "Success"
-}`}
+          placeholder={`{\n  "message": "Success"\n}`}
           className={`w-full rounded-xl border bg-white p-4 font-mono text-sm outline-none transition ${
             errors.responseBody
               ? "border-red-500 focus:ring-2 focus:ring-red-100"
@@ -361,8 +395,6 @@ function ResponseForm({
           </p>
         )}
       </div>
-
-      {/* Response Preview */}
 
       <div>
         <div className="mb-2 flex items-center justify-between">
@@ -394,16 +426,13 @@ function ResponseForm({
                 </p>
 
                 <p className="mt-1 text-sm text-slate-400">
-                  Enter valid JSON to see the
-                  response preview.
+                  Enter valid JSON to see the response preview.
                 </p>
               </div>
             </div>
           )}
         </div>
       </div>
-
-      {/* Active Response */}
 
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
         <label className="flex cursor-pointer items-center gap-3">
@@ -412,34 +441,28 @@ function ResponseForm({
             name="isActive"
             checked={form.isActive}
             onChange={handleChange}
-            className="h-4 w-4 rounded border-slate-300"
+            className="h-4 w-4 rounded border-slate-300 flex-shrink-0"
           />
 
           <div>
             <p className="text-sm font-medium text-slate-800">
               Make this the active response
             </p>
-
-            <p className="text-xs text-slate-500">
-              Only one response can be active for
-              an endpoint at a time.
-            </p>
           </div>
         </label>
       </div>
 
-      {/* Actions */}
-
-      <div className="flex justify-end gap-3 border-t border-slate-200 pt-5">
+      <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
         <Button
           type="button"
           variant="secondary"
           onClick={onCancel}
+          className="w-full sm:w-auto"
         >
           Cancel
         </Button>
 
-        <Button type="submit">
+        <Button type="submit" className="w-full sm:w-auto">
           {isEditing
             ? "Update Response"
             : "Add Response"}

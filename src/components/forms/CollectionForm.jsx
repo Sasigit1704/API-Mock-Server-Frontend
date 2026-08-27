@@ -47,9 +47,7 @@ function CollectionForm({
       onSubmit={handleSubmit}
       className="space-y-6"
     >
-
       <div>
-
         <label className="mb-2 block text-sm font-medium text-slate-700">
           Collection Name
         </label>
@@ -61,11 +59,9 @@ function CollectionForm({
           placeholder="Enter collection name"
           required
         />
-
       </div>
 
       <div>
-
         <label className="mb-2 block text-sm font-medium text-slate-700">
           Description
         </label>
@@ -78,29 +74,24 @@ function CollectionForm({
           placeholder="Enter description..."
           className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
         />
-
       </div>
 
-      <div className="flex justify-end gap-3">
-
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <Button
           type="button"
           variant="secondary"
           onClick={onCancel}
+          className="w-full sm:w-auto"
         >
           Cancel
         </Button>
 
-        <Button type="submit">
-
+        <Button type="submit" className="w-full sm:w-auto">
           {collection
             ? "Update Collection"
             : "Create Collection"}
-
         </Button>
-
       </div>
-
     </form>
   );
 }

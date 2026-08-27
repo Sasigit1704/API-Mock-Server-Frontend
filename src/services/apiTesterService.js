@@ -19,9 +19,7 @@ const buildRequestPath = (path, pathParams = {}, queryParams = []) => {
     .filter((item) => item.name?.trim())
     .map(
       (item) =>
-        `${encodeURIComponent(item.name.trim())}=${encodeURIComponent(
-          item.value ?? ""
-        )}`
+        `${encodeURIComponent(item.name.trim())}=${encodeURIComponent(item.value ?? "")}`
     )
     .join("&");
 
@@ -34,18 +32,19 @@ export const testEndpoint = async (
   body,
   token,
   pathParams = {},
-  queryParams = []
+  queryParams = [],
+  headers = {}
 ) => {
-  const response = await api({
+  const requestHeaders = { ...headers };
+
+  if (token) {
+    requestHeaders.Authorization = `Bearer ${token}`;
+  }
+
+  return api({
     url: buildRequestPath(path, pathParams, queryParams),
     method,
     data: body,
-    headers: token
-      ? {
-          Authorization: `Bearer ${token}`,
-        }
-      : {},
+    headers: requestHeaders,
   });
-
-  return response;
 };

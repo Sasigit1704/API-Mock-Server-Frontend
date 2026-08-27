@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Pencil,
   Trash2,
@@ -30,7 +30,7 @@ function ResponseList({
   const [editingResponse, setEditingResponse] =
     useState(null);
 
-  const loadResponses = async () => {
+  const loadResponses = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -46,13 +46,13 @@ function ResponseList({
     } finally {
       setLoading(false);
     }
-  };
+  },[endpointId]);
 
   useEffect(() => {
     if (endpointId) {
       loadResponses();
     }
-  }, [endpointId]);
+  }, [endpointId, loadResponses]);
 
   const handleActivate = async (id) => {
     try {
@@ -107,19 +107,15 @@ function ResponseList({
   }
 
   return (
-    <div className="mt-5 rounded-xl border border-slate-200 bg-white p-5">
-
-      {/* Header */}
-
-      <div className="mb-4 flex items-center justify-between">
+    <div className="mt-5 rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="font-semibold text-slate-900">
             Responses
           </h3>
 
           <p className="text-sm text-slate-500">
-            Configure multiple responses for this
-            endpoint.
+            Configure multiple responses for this endpoint.
           </p>
         </div>
 
@@ -128,12 +124,11 @@ function ResponseList({
             setEditingResponse(null);
             setShowForm(true);
           }}
+          className="w-full sm:w-auto"
         >
           + Add Response
         </Button>
       </div>
-
-      {/* Percentage Mode Information */}
 
       {enablePercentageBasedResponses && (
         <div
@@ -144,22 +139,20 @@ function ResponseList({
           }`}
         >
           <div className="flex items-start gap-3">
-
             {percentageIsValid ? (
               <CheckCircle
                 size={20}
-                className="mt-0.5 text-green-600"
+                className="mt-0.5 text-green-600 flex-shrink-0"
               />
             ) : (
               <AlertCircle
                 size={20}
-                className="mt-0.5 text-amber-600"
+                className="mt-0.5 text-amber-600 flex-shrink-0"
               />
             )}
 
-            <div className="flex-1">
-
-              <div className="flex items-center justify-between">
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                 <p
                   className={`font-medium ${
                     percentageIsValid
@@ -180,27 +173,10 @@ function ResponseList({
                   {roundedTotal}%
                 </span>
               </div>
-
-              {percentageIsValid ? (
-                <p className="mt-1 text-sm text-green-700">
-                  Response percentages total 100%.
-                  The mock server will select responses
-                  according to these percentages.
-                </p>
-              ) : (
-                <p className="mt-1 text-sm text-amber-700">
-                  Response percentages must total
-                  exactly 100% before percentage-based
-                  selection can be used.
-                </p>
-              )}
-
             </div>
           </div>
         </div>
       )}
-
-      {/* No Responses */}
 
       {responses.length === 0 ? (
         <EmptyState
@@ -209,31 +185,24 @@ function ResponseList({
         />
       ) : (
         <div className="space-y-3">
-
           {responses.map((response) => (
             <div
               key={response.id}
-              className="flex items-center justify-between rounded-lg border border-slate-200 p-4"
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg border border-slate-200 p-4"
             >
-
-              {/* Response Information */}
-
-              <div className="flex items-center gap-4">
-
+              <div className="flex items-start sm:items-center gap-3 min-w-0">
                 {response.isActive ? (
                   <CheckCircle
                     size={20}
-                    className="text-green-600"
+                    className="text-green-600 mt-0.5 sm:mt-0 flex-shrink-0"
                   />
                 ) : (
-                  <div className="h-5 w-5 rounded-full border-2 border-slate-300" />
+                  <div className="h-5 w-5 rounded-full border-2 border-slate-300 mt-0.5 sm:mt-0 flex-shrink-0" />
                 )}
 
-                <div>
-
-                  <div className="flex items-center gap-2">
-
-                    <span className="font-medium text-slate-900">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-medium text-slate-900 truncate">
                       {response.responseName}
                     </span>
 
@@ -242,17 +211,11 @@ function ResponseList({
                         Active
                       </Badge>
                     )}
-
                   </div>
 
-                  <div className="mt-1 flex items-center gap-3 text-sm text-slate-500">
-
-                    <span>
-                      HTTP {response.statusCode}
-                    </span>
-
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs sm:text-sm text-slate-500">
+                    <span>HTTP {response.statusCode}</span>
                     <span>•</span>
-
                     <span className="font-medium text-slate-600">
                       {Number(response.responseTimeMs || 0)} ms
                     </span>
@@ -260,41 +223,27 @@ function ResponseList({
                     {enablePercentageBasedResponses && (
                       <>
                         <span>•</span>
-
                         <span className="font-medium text-blue-600">
-                          {Number(
-                            response.percentage || 0
-                          )}
-                          %
+                          {Number(response.percentage || 0)}%
                         </span>
                       </>
                     )}
-
                   </div>
-
                 </div>
               </div>
 
-              {/* Actions */}
-
-              <div className="flex items-center gap-2">
-
-                {/* Active Response */}
-
+              <div className="flex items-center justify-end gap-2 border-t pt-3 sm:border-t-0 sm:pt-0">
                 {!response.isActive && (
                   <Button
                     variant="secondary"
+                    size="sm"
                     onClick={() =>
-                      handleActivate(
-                        response.id
-                      )
+                      handleActivate(response.id)
                     }
                   >
                     Activate
                   </Button>
                 )}
-
-                {/* Edit */}
 
                 <button
                   type="button"
@@ -302,7 +251,7 @@ function ResponseList({
                     setEditingResponse(response);
                     setShowForm(false);
                   }}
-                  className="rounded-full p-2 hover:bg-blue-100"
+                  className="rounded-full p-2 hover:bg-blue-100 transition"
                   title="Edit response"
                 >
                   <Pencil
@@ -311,16 +260,12 @@ function ResponseList({
                   />
                 </button>
 
-                {/* Delete */}
-
                 <button
                   type="button"
                   onClick={() =>
-                    handleDelete(
-                      response.id
-                    )
+                    handleDelete(response.id)
                   }
-                  className="rounded-full p-2 hover:bg-red-100"
+                  className="rounded-full p-2 hover:bg-red-100 transition"
                   title="Delete response"
                 >
                   <Trash2
@@ -328,16 +273,11 @@ function ResponseList({
                     className="text-red-600"
                   />
                 </button>
-
               </div>
-
             </div>
           ))}
-
         </div>
       )}
-
-      {/* Response Modal */}
 
       <Modal
         open={
@@ -359,7 +299,6 @@ function ResponseList({
           initialResponse={
             editingResponse
           }
-
           onSave={async (data) => {
             try {
               if (editingResponse) {
@@ -384,7 +323,6 @@ function ResponseList({
               );
             }
           }}
-
           onCancel={() => {
             setShowForm(false);
             setEditingResponse(null);

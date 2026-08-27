@@ -99,7 +99,7 @@ function EnvironmentSwitcher() {
 
   return (
     <div
-      className="relative"
+      className="relative w-full sm:w-auto"
       ref={dropdownRef}
     >
       {/* Trigger */}
@@ -108,8 +108,8 @@ function EnvironmentSwitcher() {
         onClick={() => setOpen(!open)}
         className="
           flex
-          w-[320px]
-          h-[72px]
+          w-full sm:w-72 lg:w-[320px]
+          h-[64px]
           items-center
           justify-between
           rounded-xl
@@ -130,7 +130,7 @@ function EnvironmentSwitcher() {
           />
         </div>
 
-        <div className="min-w-0 flex-1 text-left overflow-hidden">
+        <div className="min-w-0 flex-1 px-3 text-left overflow-hidden">
           <p className="text-xs text-slate-500">
             Active Environment
           </p>
@@ -152,7 +152,7 @@ function EnvironmentSwitcher() {
 
         <ChevronDown
           size={18}
-          className={`ml-3 flex-shrink-0 transition-transform ${
+          className={`ml-1 flex-shrink-0 transition-transform ${
             open ? "rotate-180" : ""
           }`}
         />
@@ -166,7 +166,7 @@ function EnvironmentSwitcher() {
             absolute
             right-0
             mt-3
-            w-80
+            w-[calc(100vw-2rem)] max-w-80 sm:w-80
             overflow-hidden
             rounded-2xl
             border

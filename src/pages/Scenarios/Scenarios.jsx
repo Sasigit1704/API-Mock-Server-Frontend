@@ -19,20 +19,16 @@ import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import ScenarioToolbar from "./ScenarioToolbar";
 import ScenarioTable from "./ScenarioTable";
 import ScenarioStats from "./ScenarioStats";
-
 import ScenarioForm from "../../components/forms/ScenarioForm";
 
 function Scenarios() {
   const [searchParams] = useSearchParams();
-
   const endpointId = searchParams.get("endpoint");
   const [endpoint, setEndpoint] = useState(null);
 
   const [scenarios, setScenarios] = useState([]);
   const [activeScenario, setActiveScenario] = useState(null);
-
   const [loading, setLoading] = useState(false);
-
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
@@ -45,11 +41,10 @@ function Scenarios() {
   const loadEndpoint = useCallback(async () => {
     const data = await getMockEndpointById(endpointId);
     setEndpoint(data);
-  },[endpointId]);
+  }, [endpointId]);
 
   const loadScenarios = useCallback(async () => {
     setLoading(true);
-
     try {
       const data = await getScenariosByEndpoint(endpointId);
       setScenarios(data);
@@ -58,7 +53,7 @@ function Scenarios() {
     } finally {
       setLoading(false);
     }
-  },[endpointId]);
+  }, [endpointId]);
 
   const loadActiveScenario = useCallback(async () => {
     try {
@@ -68,7 +63,7 @@ function Scenarios() {
       console.error(error);
       setActiveScenario(null);
     }
-  },[endpointId]);
+  }, [endpointId]);
 
   useEffect(() => {
     if (endpointId) {
@@ -89,6 +84,7 @@ function Scenarios() {
         });
       }
 
+      // Re-load the scenarios and active state directly from the backend API
       await loadScenarios();
       await loadActiveScenario();
 
@@ -101,11 +97,16 @@ function Scenarios() {
 
   const handleActivate = async (scenario) => {
     try {
-      await patchMockScenario(scenario.id, {
-        isActive: !scenario.isActive,
-      });
+      const newActiveState = !scenario.isActive;
+      await patchMockScenario(scenario.id, { isActive: newActiveState });
 
-      await loadScenarios();
+      // If we are activating this scenario, turn off all others for this endpoint
+      setScenarios((prev) =>
+        prev.map((s) => ({
+          ...s,
+          isActive: s.id === scenario.id ? newActiveState : (newActiveState ? false : s.isActive),
+        }))
+      );
       await loadActiveScenario();
     } catch (error) {
       console.error(error);
@@ -114,13 +115,10 @@ function Scenarios() {
 
   const handleDelete = async () => {
     if (!deleteScenario) return;
-
     try {
       await deleteMockScenario(deleteScenario.id);
-
-      await loadScenarios();
+      setScenarios((prev) => prev.filter((s) => s.id !== deleteScenario.id));
       await loadActiveScenario();
-
       setDeleteScenario(null);
     } catch (error) {
       console.error(error);
@@ -128,131 +126,77 @@ function Scenarios() {
   };
 
   const filteredScenarios = scenarios.filter((scenario) => {
-    const matchesSearch = scenario.scenarioName
-      .toLowerCase()
-      .includes(search.toLowerCase());
-
-    const matchesStatus =
-      statusFilter === "" ||
-      String(scenario.statusCode) === statusFilter;
-
+    const matchesSearch = scenario.scenarioName.toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = statusFilter === "" || String(scenario.statusCode) === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const [highlightedId, setHighlightedId] = useState(
-    location.state?.highlightScenarioId
-  );
+  const [highlightedId, setHighlightedId] = useState(location.state?.highlightScenarioId);
 
   useEffect(() => {
     if (!highlightedId) return;
-
-    const timer = setTimeout(() => {
-      setHighlightedId(null);
-    }, 3000);
-
+    const timer = setTimeout(() => setHighlightedId(null), 3000);
     return () => clearTimeout(timer);
   }, [highlightedId]);
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
+  if (loading) return <LoadingSpinner />;
 
   if (!endpointId) {
-      return (
-          <div className="flex justify-center py-20">
-              <div className="max-w-xl rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-
-                  <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-100">
-                      <Workflow
-                          size={30}
-                          className="text-violet-600"
-                      />
-                  </div>
-
-                  <h2 className="text-3xl font-bold text-slate-900">
-                      No Endpoint Selected
-                  </h2>
-
-                  <p className="mt-3 text-slate-500">
-                      Scenarios belong to API Endpoints.
-                      Select an endpoint from API Builder
-                      to configure delays, failures,
-                      timeout simulations and responses.
-                  </p>
-
-                  <Button
-                      className="mt-8"
-                      onClick={() =>
-                          navigate("/builder")
-                      }
-                  >
-                      Open API Builder
-                  </Button>
-
-              </div>
+    return (
+      <div className="flex justify-center py-10 sm:py-20 px-4">
+        <div className="w-full max-w-xl rounded-3xl border border-slate-200 bg-white p-6 sm:p-10 text-center shadow-sm">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-100">
+            <Workflow size={30} className="text-violet-600" />
           </div>
-      );
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">No Endpoint Selected</h2>
+          <p className="mt-3 text-sm sm:text-base text-slate-500">
+            Scenarios belong to API Endpoints. Select an endpoint from API Builder to configure delays, failures, and timeout simulations.
+          </p>
+          <Button className="mt-6 sm:mt-8 w-full sm:w-auto" onClick={() => navigate("/builder")}>
+            Open API Builder
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
-
-      {/* Header */}
-
+      {/* Endpoint Info Banner */}
       {endpoint && (
-        <div className="rounded-2xl border border-blue-200 bg-blue-50 p-5">
-          <div className="flex items-center justify-between">
-
+        <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 sm:p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-medium text-blue-700">
-                Current Endpoint
-              </p>
-
-              <div className="mt-2 flex items-center gap-3">
-
-                <Badge variant={endpoint.method.toLowerCase()}>
-                  {endpoint.method}
-                </Badge>
-
-                <span className="font-mono text-lg text-slate-800">
+              <p className="text-xs sm:text-sm font-medium text-blue-700">Current Endpoint</p>
+              <div className="mt-1 sm:mt-2 flex items-center gap-3">
+                <Badge variant={endpoint.method.toLowerCase()}>{endpoint.method}</Badge>
+                <span className="font-mono text-sm sm:text-lg text-slate-800 break-all">
                   {endpoint.path}
                 </span>
-
               </div>
             </div>
 
-            <div className="text-right">
-
-              <p className="text-sm text-slate-500">
-                Default Status
-              </p>
-
-              <p className="mt-1 text-2xl font-bold text-slate-900">
-                {endpoint.statusCode}
-              </p>
-
+            <div className="text-left sm:text-right">
+              <p className="text-xs sm:text-sm text-slate-500">Default Status</p>
+              <p className="mt-0.5 text-xl sm:text-2xl font-bold text-slate-900">{endpoint.statusCode}</p>
             </div>
-
           </div>
         </div>
       )}
 
-      <div className="flex items-start justify-between rounded-2xl bg-slate-100 p-8 shadow-sm">
-
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl bg-slate-100 p-5 sm:p-8 shadow-sm">
         <div>
-
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-slate-900">
             Scenario Management
           </h1>
-
-          <p className="text-slate-500">
+          <p className="mt-1 text-sm sm:text-base text-slate-500">
             Configure delays, timeout simulations and failure scenarios for your endpoint.
           </p>
-
         </div>
 
         <Button
-          className="px-6 py-3"
+          className="w-full sm:w-auto px-6 py-3"
           onClick={() => {
             setEditingScenario(null);
             setShowForm(true);
@@ -260,23 +204,17 @@ function Scenarios() {
         >
           + Create Scenario
         </Button>
-
       </div>
 
-      <ScenarioStats
-        scenarios={scenarios}
-        activeScenario={activeScenario}
-      />
+      <ScenarioStats scenarios={scenarios} activeScenario={activeScenario} />
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
         <ScenarioToolbar
           search={search}
           setSearch={setSearch}
           statusFilter={statusFilter}
           setStatusFilter={setStatusFilter}
         />
-
       </div>
 
       <ScenarioTable
@@ -296,11 +234,7 @@ function Scenarios() {
 
       <Modal
         open={showForm}
-        title={
-          editingScenario
-            ? "Edit Scenario"
-            : "Create Scenario"
-        }
+        title={editingScenario ? "Edit Scenario" : "Create Scenario"}
         onClose={() => {
           setShowForm(false);
           setEditingScenario(null);
@@ -323,7 +257,6 @@ function Scenarios() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteScenario(null)}
       />
-
     </div>
   );
 }

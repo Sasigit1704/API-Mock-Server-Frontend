@@ -94,28 +94,18 @@ function RequestHistory() {
     if (!deleteLog) return;
 
     try {
-      await deleteRequestHistory(
-        deleteLog.id
-      );
-
-      await loadHistory();
-
+      await deleteRequestHistory(deleteLog.id);
+      setLogs((prev) => prev.filter((log) => log.id !== deleteLog.id));
       setDeleteLog(null);
     } catch (error) {
       console.error(error);
     }
   };
 
-  // ============================================================
-  // CLEAR HISTORY
-  // ============================================================
-
   const handleClearHistory = async () => {
     try {
       await clearRequestHistory();
-
-      await loadHistory();
-
+      setLogs([]);
       setShowClearDialog(false);
       setCurrentPage(1);
     } catch (error) {
@@ -236,39 +226,48 @@ function RequestHistory() {
   // ============================================================
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
 
       {/* Header */}
 
-      <div className="flex items-start justify-between rounded-2xl bg-slate-100 p-8 shadow-sm">
+      <div className="flex flex-col gap-5 rounded-2xl bg-slate-100 p-5 shadow-sm sm:p-8 lg:flex-row lg:items-start lg:justify-between">
 
-        <div>
+        {/* Title */}
 
-          <div className="flex items-center gap-3">
+        <div className="min-w-0">
+
+          <div className="flex items-start gap-3">
 
             <History
-              size={32}
-              className="text-blue-600"
+              size={28}
+              className="mt-1 flex-shrink-0 text-blue-600 sm:h-8 sm:w-8"
             />
 
-            <h1 className="text-4xl font-bold tracking-tight text-slate-900">
-              Request History
-            </h1>
+            <div className="min-w-0">
+
+              <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+                Request History
+              </h1>
+
+              <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500 sm:text-base">
+                Monitor every request executed by
+                the Dynamic Mock Engine.
+              </p>
+
+            </div>
 
           </div>
 
-          <p className="mt-2 text-slate-500">
-            Monitor every request executed by
-            the Dynamic Mock Engine.
-          </p>
-
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        {/* Actions */}
+
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end lg:w-auto">
 
           <Button
             variant="secondary"
             onClick={loadHistory}
+            className="w-full sm:w-auto"
           >
             <RefreshCw
               size={18}
@@ -279,9 +278,8 @@ function RequestHistory() {
 
           <Button
             variant="secondary"
-            onClick={
-              exportRequestHistoryJson
-            }
+            onClick={exportRequestHistoryJson}
+            className="w-full sm:w-auto"
           >
             <Download
               size={18}
@@ -292,9 +290,8 @@ function RequestHistory() {
 
           <Button
             variant="secondary"
-            onClick={
-              exportRequestHistoryCsv
-            }
+            onClick={exportRequestHistoryCsv}
+            className="w-full sm:w-auto"
           >
             <Download
               size={18}
@@ -305,9 +302,8 @@ function RequestHistory() {
 
           <Button
             variant="danger"
-            onClick={() =>
-              setShowClearDialog(true)
-            }
+            onClick={() => setShowClearDialog(true)}
+            className="w-full sm:w-auto"
           >
             <Trash2
               size={18}
@@ -317,6 +313,7 @@ function RequestHistory() {
           </Button>
 
         </div>
+
       </div>
 
       {/* Statistics */}

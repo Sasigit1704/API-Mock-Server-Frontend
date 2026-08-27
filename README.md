@@ -2,137 +2,176 @@
 
 A modern React-based developer interface for designing, configuring, organizing, and testing configurable mock REST APIs.
 
-The frontend provides an intuitive enterprise-style dashboard for managing mock endpoints, scenarios, collections, and environments while interacting with the ASP.NET Core backend. It enables frontend developers and QA engineers to simulate backend behavior without depending on live services.
+The frontend provides an enterprise-style dashboard for managing mock endpoints, responses, scenarios, collections, environments, OpenAPI imports, request history, and API testing. It communicates with the ASP.NET Core Web API backend and provides a visual interface for configuring and verifying simulated API behavior.
 
 ---
 
-# Overview
+## Overview
 
-The **API Mock Server & Scenario Simulator** is a full-stack developer tool that allows teams to continue frontend development, integration, and API testing even when backend services are unavailable or under development.
+The **API Mock Server & Scenario Simulator** is a full-stack developer tool designed to help frontend developers, QA engineers, and integration teams continue development and testing without depending on live backend services.
 
-This frontend application communicates with the ASP.NET Core Web API backend and provides an interactive interface for creating and managing mock APIs stored in MongoDB.
+The frontend allows users to:
 
-The application currently supports complete management of mock endpoints, collections, environments, and mock scenarios while offering dynamic search, enterprise dashboard navigation, and API simulation configuration.
+- Create and configure mock REST endpoints
+- Configure multiple responses for an endpoint
+- Select active responses or distribute responses using percentages
+- Configure request validation and authentication
+- Simulate delays, timeouts, random failures, input errors, and process errors
+- Configure scenarios for different API behaviours
+- Use response templating with request data
+- Simulate rate limiting and malformed JSON responses
+- Import OpenAPI definitions
+- Test endpoints directly from the API Tester
+- Inspect request history
+- Organize endpoints using collections and environments
 
 ---
 
-# Features
-
-## Currently Available
+## Features
 
 ### Dashboard
 
-- Interactive project dashboard
-- Statistics cards
-- Endpoint summary
-- Collection summary
-- Environment summary
-- Scenario summary
-- Quick navigation
-
----
+- Project overview
+- Endpoint statistics
+- Collection statistics
+- Environment statistics
+- Scenario statistics
+- Quick navigation to major modules
 
 ### API Builder
 
-- Create mock endpoints
-- Update endpoint configuration
-- Delete endpoints
-- Search endpoints
-- Filter by HTTP Method
-- Enable / Disable endpoints
-- Endpoint statistics
+- Create, edit, and delete mock endpoints
+- Configure HTTP method and dynamic paths
+- Enable or disable endpoints
+- Configure custom status codes and response bodies
+- Add multiple responses to one endpoint
+- Configure active responses
+- Configure percentage-based response selection
+- Configure response time
+- Configure authentication requirements
+- Configure request schemas and validation rules
+- Configure input errors
+- Configure process errors
+- Configure rate limiting
+- Configure malformed JSON responses
+- Configure endpoint scenarios
 
----
+### Response Simulation
+
+- Single active response
+- Multiple responses
+- Percentage-based response selection
+- Custom status codes
+- Artificial response delays
+- Timeout simulation
+- Random failure simulation
+- Response templating
+
+Supported response template sources include:
+
+```text
+{{path.id}}
+{{query.name}}
+{{body.name}}
+{{header.X-Client-Name}}
+```
 
 ### Scenario Management
 
-- Create scenarios
-- Edit scenarios
-- Delete scenarios
-- Activate scenarios
-- Configure custom responses
-- Configure response status codes
-- Configure response delays
+- Create and edit scenarios
+- Activate a scenario for an endpoint
+- Switch between scenarios
+- Configure scenario status codes
+- Configure scenario delays
 - Configure timeout simulation
-- Configure random failure simulation
-- Search scenarios
-- Filter by status code
+- Configure random failure rates
 
----
+### Request Validation
+
+- JSON Schema-based request validation
+- Required field validation
+- Data type validation
+- String constraints
+- Numeric constraints
+- Pattern validation
+- Nested object validation
+- Array validation
+- Support for schema-based and sample-JSON definitions
+
+### API Tester
+
+- Select configured endpoints
+- Automatically resolve path parameters
+- Add query parameters
+- Enter request bodies
+- Provide authentication tokens
+- Send requests directly from the application
+- View status codes
+- View response bodies
+- View response time
+- Test the actual mock execution pipeline
+
+### Request History
+
+- View executed requests
+- Inspect request and response details
+- Review status codes
+- Review response times
+- Search and navigate through request records
+- Paginated request history
 
 ### Collections
 
 - Create collections
 - Edit collections
 - Delete collections
-- Organize endpoints
+- Organize related endpoints
 - Search collections
 
----
-
-### Environment Management
+### Environments
 
 - Create environments
 - Edit environments
 - Delete environments
 - Activate environments
-- Search environments
+- Manage environment-specific configurations
+
+### OpenAPI Import
+
+- Import OpenAPI definitions
+- Read endpoint definitions from an OpenAPI document
+- Generate mock endpoint configurations
+- Configure imported endpoints before execution
+
+### Search and Pagination
+
+- Search across records
+- Search results across all pages
+- Pagination for large datasets
+- Previous/Next navigation
+- Disabled navigation at the first and last pages
+- Row highlighting and navigation to matching records
 
 ---
 
-### Global Search
+## Technology Stack
 
-- Search endpoints
-- Search collections
-- Search environments
-- Search scenarios
-- Instant search results
-- Navigation to matched records
-- Automatic row highlighting
-
----
-
-### User Experience
-
-- Modern enterprise dashboard
-- Responsive layout
-- Mobile-friendly interface
-- Collapsible sidebar
-- Professional navigation
-- Reusable UI components
-- Consistent design system
-- Loading indicators
-- Confirmation dialogs
-- Empty state components
-
----
-
-# Upcoming Features
-
-- Request History
-- Request Logs
-- OpenAPI Import
-- Response Preview
-- Environment Switching
-- Advanced Validation
-- Toast Notifications
-- Response Templates
-- Advanced Filtering
-- Export / Import Configuration
-
----
-
-# Technology Stack
-
-## Frontend
+### Frontend
 
 - React
+- Vite
 - React Router
 - Axios
 - Tailwind CSS
 - Lucide React
 
-## Development Tools
+### Backend Integration
+
+- ASP.NET Core Web API
+- .NET 8
+- MongoDB
+
+### Development Tools
 
 - Visual Studio Code
 - Git
@@ -140,32 +179,56 @@ The application currently supports complete management of mock endpoints, collec
 
 ---
 
-# System Architecture
+## Architecture
 
-The frontend serves as the presentation layer of the API Mock Server & Scenario Simulator.
-
+```text
+┌─────────────────────────────────────┐
+│           React Frontend            │
+│                                     │
+│ Dashboard                           │
+│ API Builder                         │
+│ API Tester                          │
+│ Scenarios                           │
+│ Collections                         │
+│ Environments                        │
+│ OpenAPI Import                      │
+│ Request History                     │
+└──────────────────┬──────────────────┘
+                   │
+             HTTP / JSON
+                   │
+┌──────────────────▼──────────────────┐
+│        ASP.NET Core Web API         │
+│                                     │
+│ Controllers                         │
+│ Services                            │
+│ Repositories                        │
+│ Dynamic Mock Engine                 │
+│ Scenario Engine                     │
+│ Validation Engine                   │
+│ Request History                     │
+└──────────────────┬──────────────────┘
+                   │
+┌──────────────────▼──────────────────┐
+│              MongoDB                │
+│                                     │
+│ Endpoints                           │
+│ Responses                           │
+│ Scenarios                           │
+│ Collections                         │
+│ Environments                        │
+│ Request History                     │
+└─────────────────────────────────────┘
 ```
-React Frontend
-       │
-REST API (HTTP/JSON)
-       │
-ASP.NET Core Web API
-       │
-MongoDB
-```
-![System Architecture](docs/01-system-architecture.png)
-
-Additional architecture diagrams are available inside the **docs** folder.
 
 ---
 
-# Project Structure
+## Project Structure
 
 ```text
 api-mock-server-ui
 │
 ├── public
-│
 ├── src
 │   ├── api
 │   ├── assets
@@ -174,20 +237,19 @@ api-mock-server-ui
 │   │   ├── layout
 │   │   ├── search
 │   │   └── ui
-│   │
 │   ├── hooks
 │   ├── pages
 │   │   ├── Dashboard
 │   │   ├── ApiBuilder
+│   │   ├── ApiTester
 │   │   ├── Collections
 │   │   ├── Environments
+│   │   ├── RequestHistory
 │   │   └── Scenarios
-│   │
 │   ├── services
 │   ├── utils
 │   ├── App.jsx
-│   └── index.js
-│
+│   └── main.jsx
 ├── docs
 ├── package.json
 └── README.md
@@ -195,187 +257,202 @@ api-mock-server-ui
 
 ---
 
-# Installation
+## Installation
 
-## Clone Repository
+### Clone
 
 ```bash
-git clone <https://github.com/Sasigit1704/API-Mock-Server-Frontend.git>
+git clone https://github.com/Sasigit1704/API-Mock-Server-Frontend.git
+cd API-Mock-Server-Frontend
 ```
 
-## Install Dependencies
+### Install dependencies
 
 ```bash
 npm install
 ```
 
-## Start Development Server
+### Start the frontend
 
 ```bash
-npm start
+npm run dev
 ```
 
-Frontend URL
+The Vite development server will display the frontend URL in the terminal.
 
+> Start the ASP.NET Core backend before using API Builder, API Tester, OpenAPI Import, or other backend-connected features.
+
+---
+
+## Backend Integration
+
+The frontend communicates with the backend through REST APIs.
+
+| Module | Purpose |
+|---|---|
+| Mock Endpoints | Create and manage endpoint definitions |
+| Mock Responses | Configure responses associated with endpoints |
+| Mock Scenarios | Configure alternative API behaviours |
+| Collections | Organize endpoints |
+| Environments | Manage environment configurations |
+| API Tester | Execute and verify mock APIs |
+| Request History | Inspect previously executed requests |
+| OpenAPI Import | Generate endpoint configurations from OpenAPI definitions |
+| Dynamic Mock Engine | Execute configured mock behavior |
+
+---
+
+## Screenshots
+
+The screenshots below are the names to use when storing images in:
+
+```text
+docs/screenshots/
 ```
-http://localhost:3000
-```
 
-> Ensure the backend application is running before using the frontend.
+### Dashboard
 
----
+![Dashboard](docs/screenshots/01-dashboard.png)
 
-# Backend Integration
+Project overview showing endpoint, collection, environment, and scenario statistics.
 
-The frontend communicates with the ASP.NET Core Web API using REST APIs.
+### API Builder
 
-| Module | Operations |
-|----------|-------------------------|
-| Mock Endpoints | CRUD |
-| Mock Scenarios | CRUD + Activate |
-| Collections | CRUD |
-| Environments | CRUD |
-| Dynamic Mock Execution | Execute Mock APIs |
+![API Builder](docs/screenshots/02-api-builder.png)
 
----
+Central interface for creating and configuring mock endpoints.
 
-# Screenshots
+### Endpoint Configuration
 
-## Dashboard
+![Endpoint Configuration](docs/screenshots/03-endpoint-configuration.png)
 
-![Dashboard](docs/screenshots/dashboard.png)
+Endpoint configuration including method, path, request schema, validation, authentication, and simulation settings.
 
-Provides an overview of the project with statistics for endpoints, collections, environments, and scenarios, enabling developers to quickly understand the current mock server configuration.
+### Multiple Responses
 
----
+![Multiple Responses](docs/screenshots/04-multiple-responses.png)
 
-## API Builder
+Multiple response configurations with active response and percentage-based response selection.
 
-![API Builder](docs/screenshots/api-builder.png)
+### Scenarios
 
-Create, edit, delete, search, filter, and manage mock API endpoints from a centralized interface.
+![Scenarios](docs/screenshots/05-scenarios.png)
 
----
+Scenario management with active scenario selection and configurable simulated behavior.
 
-## Scenario Management
+### API Tester
 
-![Scenarios](docs/screenshots/scenarios.png)
+![API Tester](docs/screenshots/06-api-tester.png)
 
-Configure dynamic API behavior by creating multiple scenarios for an endpoint, including custom responses, status codes, delays, timeout simulation, and random failure simulation.
+Direct request testing from the frontend with path parameters, query parameters, request body, authentication, and response output.
 
----
+### Response Templating
 
-## Collections
+![Response Templating](docs/screenshots/07-response-templating.png)
 
-![Collections](docs/screenshots/collections.png)
+Dynamic response values generated from path, query, body, and header request data.
 
-Group related mock endpoints into reusable collections for better organization and management.
+### Rate Limiting
 
----
+![Rate Limiting](docs/screenshots/08-rate-limiting.png)
 
-## Environment Management
+Endpoint configured with request limits and a rate-limit response.
 
-![Environment Management](docs/screenshots/environments.png)
+### Malformed JSON
 
-Create and manage multiple environments used during API simulation and testing.
+![Malformed JSON](docs/screenshots/09-malformed-json.png)
 
----
+Intentional malformed response configuration used to simulate invalid backend JSON.
 
-## Global Search
+### Request History
 
-![Global Search](docs/screenshots/global-search.png)
+![Request History](docs/screenshots/10-request-history.png)
 
-Search across endpoints, scenarios, collections, and environments with instant navigation to matching records.
+Paginated request history showing executed API requests and their results.
 
----
+### Collections
 
-# Documentation
+![Collections](docs/screenshots/11-collections.png)
 
-The repository includes architecture diagrams and design documentation.
+Collection management and endpoint organization.
 
-| Document | Description |
-|----------|-------------|
-| `docs/01-system-architecture.png` | High-level project architecture |
-| `docs/02-foundation-architecture.png` | Foundation layer architecture |
-| `docs/03-api-request-lifecycle.png` | Request execution lifecycle |
-| `docs/04-database-design.png` | MongoDB database design |
-| `docs/05-frontend-component-architecture.png` | Frontend component architecture |
-| `docs/06-backend-component-architecture.png` | Backend component architecture |
+### Environments
 
----
+![Environments](docs/screenshots/12-environments.png)
 
-# Roadmap
+Environment management and active environment configuration.
 
-## Completed
+### OpenAPI Import
 
-- ✅ Dashboard
-- ✅ API Builder
-- ✅ Mock Endpoint CRUD
-- ✅ Mock Scenario CRUD
-- ✅ Collection CRUD
-- ✅ Environment CRUD
-- ✅ Dynamic Search
-- ✅ Enterprise Dashboard Layout
-- ✅ Responsive User Interface
-- ✅ Dynamic Mock Engine Integration
+![OpenAPI Import](docs/screenshots/13-openapi-import.png)
+
+OpenAPI document import and generated endpoint configuration.
+
+### Swagger / Backend Execution
+
+![Swagger](docs/screenshots/14-swagger-execution.png)
+
+Swagger request demonstrating execution of a configured mock endpoint.
+
+### Dynamic Mock Response
+
+![Dynamic Mock Response](docs/screenshots/15-dynamic-mock-response.png)
+
+Actual mock response returned by the backend after endpoint configuration.
+
+### MongoDB
+
+![MongoDB](docs/screenshots/16-mongodb.png)
+
+MongoDB data showing persisted mock-server configuration.
 
 ---
 
-## Planned
+## Documentation
 
-- [ ] Request History
-- [ ] Request Log Viewer
-- [ ] Response Preview
-- [ ] OpenAPI Import
-- [ ] Environment Switching
-- [ ] Advanced Validation
-- [ ] Toast Notifications
-- [ ] Response Templates
-- [ ] Export / Import Configuration
-- [ ] Advanced Filtering
-- [ ] Dark Mode
+Technical documentation is maintained under the `docs` directory.
 
----
-
-# Contributing
-
-Contributions are welcome.
-
-To contribute:
-
-1. Fork the repository.
-2. Create a feature branch.
-3. Follow the existing project structure and coding standards.
-4. Test your changes before submitting.
-5. Open a Pull Request describing your changes.
+| File | Description |
+|---|---|
+| `docs/system-architecture.png` | Overall application architecture |
+| `docs/frontend-component-architecture.png` | Frontend component structure |
+| `docs/backend-component-architecture.png` | Backend architecture |
+| `docs/api-request-lifecycle.png` | Request execution lifecycle |
+| `docs/database-design.png` | MongoDB data model |
+| `docs/API-DOCUMENTATION.md` | REST API reference and usage examples |
 
 ---
 
-# Future Enhancements
+## Project Status
 
-The frontend has been designed with extensibility in mind and will continue to evolve with additional enterprise-level capabilities, including:
+The current implementation includes:
 
-- Request Analytics Dashboard
-- API Performance Metrics
-- Environment Comparison
-- Collection Import & Export
-- Team Collaboration Features
-- User Authentication & Authorization
-- Role-Based Access Control
-- Theme Customization
-- Keyboard Shortcuts
-- API Documentation Viewer
+- Dashboard and navigation
+- Mock endpoint management
+- Multiple response configuration
+- Percentage-based response selection
+- Scenario simulation
+- Request validation
+- Authentication
+- Response templating
+- Response delay and timeout simulation
+- Random failure simulation
+- Input and process error simulation
+- Rate limiting
+- Malformed JSON simulation
+- API Tester
+- Request history
+- Collections
+- Environments
+- OpenAPI import
+- Swagger-based backend testing
 
 ---
 
-# Author
+## Author
 
 **Sasi Kaladhar**
 
-Developer
-
 **API Mock Server & Scenario Simulator**
 
-Built as a full-stack developer tool using React, ASP.NET Core Web API, and MongoDB to simplify API development, frontend integration, and testing through configurable mock services.
-
----
+A full-stack developer tool built with React, ASP.NET Core Web API, and MongoDB for configurable API simulation, frontend integration testing, and backend behavior simulation.

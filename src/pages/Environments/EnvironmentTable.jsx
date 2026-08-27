@@ -33,7 +33,7 @@ function EnvironmentTable({
         "Base URL",
         "Description",
         "Status",
-        "Actions",
+        "Edit | Activate | Delete",
       ]}
     >
       {environments.map((environment) => (
@@ -109,7 +109,7 @@ function EnvironmentTable({
 
           <td className="px-8 py-5">
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-8">
 
               <button
                 onClick={() => onEdit(environment)}

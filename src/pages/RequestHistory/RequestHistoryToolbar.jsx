@@ -10,11 +10,8 @@ function RequestHistoryToolbar({
 }) {
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-
       {/* Search */}
-
       <div className="relative w-full lg:max-w-md">
-
         <Search
           size={18}
           className="absolute left-4 top-3.5 text-slate-400"
@@ -41,13 +38,10 @@ function RequestHistoryToolbar({
             focus:ring-blue-500
           "
         />
-
       </div>
 
       {/* Filters */}
-
-      <div className="flex flex-wrap gap-3">
-
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full lg:w-auto">
         <select
           value={methodFilter}
           onChange={(e) =>
@@ -119,9 +113,7 @@ function RequestHistoryToolbar({
           <option>503</option>
           <option>504</option>
         </select>
-
       </div>
-
     </div>
   );
 }

@@ -41,6 +41,7 @@ function RequestHistoryTable({
   };
 
   return (
+    <div className="w-full overflow-x-auto rounded-lg border border-slate-200">
     <Table
       headers={[
         "Method",
@@ -50,7 +51,7 @@ function RequestHistoryTable({
         "Status",
         "Response Time",
         "Date",
-        "Action",
+        "View | Delete",
       ]}
     >
       {logs.map((log) => (
@@ -152,7 +153,7 @@ function RequestHistoryTable({
           {/* Actions */}
 
           <td className="px-8 py-5">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
 
               <button
                 type="button"
@@ -189,6 +190,7 @@ function RequestHistoryTable({
         </tr>
       ))}
     </Table>
+    </div>
   );
 }
 

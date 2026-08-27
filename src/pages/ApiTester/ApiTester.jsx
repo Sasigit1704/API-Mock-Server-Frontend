@@ -24,6 +24,7 @@ function ApiTester() {
   const [authToken, setAuthToken] = useState("");
   const [pathParams, setPathParams] = useState({});
   const [queryParams, setQueryParams] = useState([]);
+  const [headers, setHeaders] = useState([]);
   const [response, setResponse] = useState(null);
 
   const loadEndpoints = async () => {
@@ -49,6 +50,7 @@ function ApiTester() {
       setAuthToken("");
       setPathParams({});
       setQueryParams([]);
+      setHeaders([]);
       setResponse(null);
       return;
     }
@@ -57,6 +59,7 @@ function ApiTester() {
     setAuthToken("");
     setPathParams(getInitialPathParams(selectedEndpoint.path));
     setQueryParams([]);
+    setHeaders([]);
     setResponse(null);
   }, [selectedEndpoint]);
 
@@ -97,10 +100,15 @@ function ApiTester() {
       return;
     }
 
+    const requestHeaders = headers.reduce((result, item) => {
+      const name = item.name?.trim();
+      if (name) result[name] = item.value ?? "";
+      return result;
+    }, {});
+
     try {
       setLoading(true);
       setResponse(null);
-
       const start = performance.now();
 
       const result = await testEndpoint(
@@ -109,7 +117,8 @@ function ApiTester() {
         parsedBody,
         authToken,
         pathParams,
-        queryParams
+        queryParams,
+        requestHeaders
       );
 
       const end = performance.now();
@@ -121,11 +130,9 @@ function ApiTester() {
         isClientError: false,
       });
     } catch (error) {
-      const end = performance.now();
-
       setResponse({
         status: error.response?.status || 500,
-        responseTime: Math.round(end - performance.now() + 0),
+        responseTime: 0,
         body:
           error.response?.data || {
             success: false,
@@ -138,20 +145,14 @@ function ApiTester() {
     }
   };
 
-  const handleClearResponse = () => {
-    setResponse(null);
-  };
-
   return (
     <div className="space-y-6">
       <div className="rounded-2xl bg-slate-100 p-8 shadow-sm">
-        <h1 className="text-4xl font-bold tracking-tight text-slate-900">
-          API Tester
-        </h1>
+        <h1 className="text-4xl font-bold tracking-tight text-slate-900">API Tester</h1>
         <p className="mt-3 max-w-3xl text-slate-500">
           Test your configured mock endpoints directly from the application.
           Verify authentication, input validation, process errors, scenarios,
-          response selection, and response timing before using Swagger or cURL.
+          response selection, headers, and response timing before using Swagger or cURL.
         </p>
       </div>
 
@@ -174,13 +175,12 @@ function ApiTester() {
           setPathParams={setPathParams}
           queryParams={queryParams}
           setQueryParams={setQueryParams}
+          headers={headers}
+          setHeaders={setHeaders}
           onSend={handleSendRequest}
           loading={loading}
         />
-        <ResponseViewer
-          response={response}
-          onClear={handleClearResponse}
-        />
+        <ResponseViewer response={response} onClear={() => setResponse(null)} />
       </div>
     </div>
   );

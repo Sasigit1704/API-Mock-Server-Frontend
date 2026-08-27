@@ -40,187 +40,167 @@ function ScenarioTable({
   }
 
   return (
-    <Table
-      headers={[
-        "Active",
-        "Scenario",
-        "Status",
-        "Delay",
-        "Timeout",
-        "Failure",
-        "Edit | Activate | Delete",
-      ]}
-    >
-      {scenarios.map((scenario) => (
-        <tr
-          key={scenario.id}
-          ref={(el) => {
-            if (el) {
-              rowRefs.current[scenario.id] = el;
-            }
-          }}
-          className={`
-            border-t
-            transition-all
-            duration-500
-            hover:bg-slate-50
-            ${
-              highlightedId === scenario.id
-                ? "bg-blue-100 ring-2 ring-blue-300"
-                : scenario.isActive
-                ? "bg-green-50"
-                : ""
-            }
-          `}
-        >
-          {/* Active */}
-
-          <td className="px-8 py-5">
-            <Badge
-              variant={
-                scenario.isActive
-                  ? "success"
-                  : "secondary"
+    <div className="w-full overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <Table
+        headers={[
+          "Active",
+          "Scenario",
+          "Status",
+          "Delay",
+          "Timeout",
+          "Failure",
+          "Edit | Activate | Delete",
+        ]}
+      >
+        {scenarios.map((scenario) => (
+          <tr
+            key={scenario.id}
+            ref={(el) => {
+              if (el) {
+                rowRefs.current[scenario.id] = el;
               }
-            >
-              {scenario.isActive
-                ? "Active"
-                : "Inactive"}
-            </Badge>
-          </td>
-
-          {/* Scenario */}
-
-          <td className="px-8 py-5 font-medium text-slate-900">
-            {scenario.scenarioName}
-          </td>
-
-          {/* Status */}
-
-          <td className="px-8 py-5">
-            <Badge
-              variant={
-                scenario.statusCode >= 500
-                  ? "error"
-                  : scenario.statusCode >= 400
-                  ? "warning"
-                  : "success"
+            }}
+            className={`
+              border-t
+              transition-all
+              duration-500
+              hover:bg-slate-50
+              ${
+                highlightedId === scenario.id
+                  ? "bg-blue-100 ring-2 ring-blue-300"
+                  : scenario.isActive
+                  ? "bg-green-50"
+                  : ""
               }
-            >
-              {scenario.statusCode}
-            </Badge>
-          </td>
-
-          {/* Delay */}
-
-          <td className="px-8 py-5">
-            <Badge
-              variant={
-                scenario.delay > 0
-                  ? "info"
-                  : "secondary"
-              }
-            >
-              {scenario.delay} ms
-            </Badge>
-          </td>
-
-          {/* Timeout */}
-
-          <td className="px-8 py-5">
-            <Badge
-              variant={
-                scenario.enableTimeout
-                  ? "warning"
-                  : "secondary"
-              }
-            >
-              {scenario.enableTimeout
-                ? `${scenario.timeoutDelay} ms`
-                : "Disabled"}
-            </Badge>
-          </td>
-
-          {/* Random Failure */}
-
-          <td className="px-8 py-5">
-            <Badge
-              variant={
-                scenario.enableRandomFailure
-                  ? "error"
-                  : "secondary"
-              }
-            >
-              {scenario.enableRandomFailure
-                ? `${scenario.failureRate}%`
-                : "Disabled"}
-            </Badge>
-          </td>
-
-          {/* Actions */}
-
-          <td className="px-8 py-5">
-            <div className="flex items-center gap-8">
-
-              {/* Edit */}
-
-              <button
-                type="button"
-                onClick={() => onEdit(scenario)}
-                className="rounded-full p-2 transition hover:bg-blue-100"
-                title="Edit Scenario"
-              >
-                <Pencil
-                  size={18}
-                  className="text-blue-600"
-                />
-              </button>
-
-              {/* Activate / Deactivate */}
-
-              <button
-                type="button"
-                onClick={() => onActivate(scenario)}
-                className={`rounded-full p-2 transition ${
+            `}
+          >
+            <td className="px-6 py-4 whitespace-nowrap">
+              <Badge
+                variant={
                   scenario.isActive
-                    ? "hover:bg-red-100"
-                    : "hover:bg-yellow-100"
-                }`}
-                title={
-                  scenario.isActive
-                    ? "Deactivate Scenario"
-                    : "Activate Scenario"
+                    ? "success"
+                    : "secondary"
                 }
               >
-                <Star
-                  size={18}
-                  className={
-                    scenario.isActive
-                      ? "fill-yellow-400 text-yellow-500"
-                      : "text-yellow-500"
-                  }
-                />
-              </button>
+                {scenario.isActive
+                  ? "Active"
+                  : "Inactive"}
+              </Badge>
+            </td>
 
-              {/* Delete */}
+            <td className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">
+              {scenario.scenarioName}
+            </td>
 
-              <button
-                type="button"
-                onClick={() => onDelete(scenario)}
-                className="rounded-full p-2 transition hover:bg-red-100"
-                title="Delete Scenario"
+            <td className="px-6 py-4 whitespace-nowrap">
+              <Badge
+                variant={
+                  scenario.statusCode >= 500
+                    ? "error"
+                    : scenario.statusCode >= 400
+                    ? "warning"
+                    : "success"
+                }
               >
-                <Trash2
-                  size={18}
-                  className="text-red-600"
-                />
-              </button>
+                {scenario.statusCode}
+              </Badge>
+            </td>
 
-            </div>
-          </td>
-        </tr>
-      ))}
-    </Table>
+            <td className="px-6 py-4 whitespace-nowrap">
+              <Badge
+                variant={
+                  scenario.delay > 0
+                    ? "info"
+                    : "secondary"
+                }
+              >
+                {scenario.delay} ms
+              </Badge>
+            </td>
+
+            <td className="px-6 py-4 whitespace-nowrap">
+              <Badge
+                variant={
+                  scenario.enableTimeout
+                    ? "warning"
+                    : "secondary"
+                }
+              >
+                {scenario.enableTimeout
+                  ? `${scenario.timeoutDelay} ms`
+                  : "Disabled"}
+              </Badge>
+            </td>
+
+            <td className="px-6 py-4 whitespace-nowrap">
+              <Badge
+                variant={
+                  scenario.enableRandomFailure
+                    ? "error"
+                    : "secondary"
+                }
+              >
+                {scenario.enableRandomFailure
+                  ? `${scenario.failureRate}%`
+                  : "Disabled"}
+              </Badge>
+            </td>
+
+            <td className="px-6 py-4 whitespace-nowrap">
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => onEdit(scenario)}
+                  className="rounded-full p-2 transition hover:bg-blue-100"
+                  title="Edit Scenario"
+                >
+                  <Pencil
+                    size={18}
+                    className="text-blue-600"
+                  />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onActivate(scenario)}
+                  className={`rounded-full p-2 transition ${
+                    scenario.isActive
+                      ? "hover:bg-red-100"
+                      : "hover:bg-yellow-100"
+                  }`}
+                  title={
+                    scenario.isActive
+                      ? "Deactivate Scenario"
+                      : "Activate Scenario"
+                  }
+                >
+                  <Star
+                    size={18}
+                    className={
+                      scenario.isActive
+                        ? "fill-yellow-400 text-yellow-500"
+                        : "text-yellow-500"
+                    }
+                  />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onDelete(scenario)}
+                  className="rounded-full p-2 transition hover:bg-red-100"
+                  title="Delete Scenario"
+                >
+                  <Trash2
+                    size={18}
+                    className="text-red-600"
+                  />
+                </button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </Table>
+    </div>
   );
 }
 

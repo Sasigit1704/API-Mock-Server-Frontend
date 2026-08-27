@@ -52,14 +52,12 @@ function Environments() {
   const handleSave = async (formData) => {
     try {
       if (editingEnvironment) {
-        await updateEnvironment(
-          editingEnvironment.id,
-          formData
-        );
+        await updateEnvironment(editingEnvironment.id, formData);
       } else {
         await createEnvironment(formData);
       }
 
+      // Re-load fresh from backend to get correct property casing
       await loadEnvironments();
 
       setShowForm(false);
@@ -77,10 +75,15 @@ function Environments() {
         isActive: true,
       });
 
-      await loadEnvironments();
+      // Update local state: set the clicked one to active, others to inactive
+      setEnvironments((prev) =>
+        prev.map((env) => ({
+          ...env,
+          isActive: env.id === environment.id,
+        }))
+      );
 
       window.dispatchEvent(new Event("environmentChanged"));
-
     } catch (error) {
       console.error(error);
     }
@@ -90,7 +93,7 @@ function Environments() {
     if (!deleteEnvironmentItem) return;
     try {
       await deleteEnvironment(deleteEnvironmentItem.id);
-      await loadEnvironments();
+      setEnvironments((prev) => prev.filter((env) => env.id !== deleteEnvironmentItem.id));
       setDeleteEnvironmentItem(null);
     } catch (error) {
       console.error(error);
@@ -132,7 +135,7 @@ function Environments() {
 
       {/* Header */}
 
-      <div className="flex items-start justify-between rounded-2xl bg-slate-100 p-8 shadow-sm">
+      <div className="flex flex-col gap-5 rounded-2xl bg-slate-100 p-5 shadow-sm sm:flex-row sm:items-start sm:justify-between sm:p-8">
 
         <div>
 
@@ -153,7 +156,7 @@ function Environments() {
         </div>
 
         <Button
-          className="px-6 py-3"
+          className="w-full px-6 py-3 sm:w-auto"
           onClick={() => {
             setEditingEnvironment(null);
             setShowForm(true);

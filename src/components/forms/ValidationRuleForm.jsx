@@ -1,7 +1,20 @@
 import { useEffect, useState } from "react";
+
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import Select from "../ui/Select";
+
+const emptyRule = {
+  fieldPath: "",
+  dataType: "String",
+  isRequired: true,
+  minLength: "",
+  maxLength: "",
+  minValue: "",
+  maxValue: "",
+  pattern: "",
+  errorResponses: [],
+};
 
 function ValidationRuleForm({
   fields,
@@ -10,33 +23,11 @@ function ValidationRuleForm({
   onUpdate,
   onCancelEdit,
 }) {
-  const emptyRule = {
-    fieldPath: "",
-    dataType: "String",
-    isRequired: true,
-    minLength: "",
-    maxLength: "",
-    minValue: "",
-    maxValue: "",
-    pattern: "",
-    errorResponses: [],
-  };
-
   const [rule, setRule] = useState(emptyRule);
+  const [errors, setErrors] = useState({});
 
   const isEditing = initialRule !== null;
 
-  /*
-   * Fields can come from the generated JSON Schema metadata:
-   * {
-   *   fieldPath: "name",
-   *   dataType: "String",
-   *   isRequired: true
-   * }
-   *
-   * Older/manual callers may still provide plain strings,
-   * so those remain supported.
-   */
   const normalizedFields = (fields || [])
     .map((field) => {
       if (typeof field === "string") {
@@ -60,31 +51,27 @@ function ValidationRuleForm({
       (field) => field.fieldPath === fieldPath
     );
 
-  /*
-   * Decide which validation errors are applicable
-   * for the selected data type and configured rules.
-   */
   const getValidationTypes = (currentRule) => {
     const types = [];
 
-    // Required applies to every field
     if (currentRule.isRequired) {
       types.push("Required");
     }
 
-    // Type validation applies to every field
     types.push("Type");
 
-    if (
-      currentRule.dataType === "String"
-    ) {
-      if (currentRule.minLength !== "" &&
-          currentRule.minLength !== null) {
+    if (currentRule.dataType === "String") {
+      if (
+        currentRule.minLength !== "" &&
+        currentRule.minLength !== null
+      ) {
         types.push("MinLength");
       }
 
-      if (currentRule.maxLength !== "" &&
-          currentRule.maxLength !== null) {
+      if (
+        currentRule.maxLength !== "" &&
+        currentRule.maxLength !== null
+      ) {
         types.push("MaxLength");
       }
 
@@ -96,9 +83,7 @@ function ValidationRuleForm({
       }
     }
 
-    if (
-      currentRule.dataType === "Number"
-    ) {
+    if (currentRule.dataType === "Number") {
       if (
         currentRule.minValue !== "" &&
         currentRule.minValue !== null
@@ -117,9 +102,6 @@ function ValidationRuleForm({
     return types;
   };
 
-  /*
-   * Create an error-response object.
-   */
   const createEmptyErrorResponse = (
     validationType
   ) => ({
@@ -132,36 +114,29 @@ function ValidationRuleForm({
   useEffect(() => {
     if (initialRule) {
       setRule({
-        fieldPath:
-          initialRule.fieldPath || "",
-
+        fieldPath: initialRule.fieldPath || "",
         dataType:
           initialRule.dataType || "String",
-
         isRequired:
           initialRule.isRequired ?? true,
-
         minLength:
           initialRule.minLength ?? "",
-
         maxLength:
           initialRule.maxLength ?? "",
-
         minValue:
           initialRule.minValue ?? "",
-
         maxValue:
           initialRule.maxValue ?? "",
-
         pattern:
           initialRule.pattern || "",
-
         errorResponses:
           initialRule.errorResponses || [],
       });
     } else {
       setRule(emptyRule);
     }
+
+    setErrors({});
   }, [initialRule]);
 
   const handleChange = (e) => {
@@ -173,16 +148,26 @@ function ValidationRuleForm({
     } = e.target;
 
     if (name === "fieldPath") {
-      const metadata = getFieldMetadata(value);
+      const metadata =
+        getFieldMetadata(value);
 
       setRule((prev) => ({
         ...prev,
         fieldPath: value,
         dataType:
-          metadata?.dataType || prev.dataType,
+          metadata?.dataType ||
+          prev.dataType,
         isRequired:
-          metadata?.isRequired ?? prev.isRequired,
+          metadata?.isRequired ??
+          prev.isRequired,
       }));
+
+      if (errors.fieldPath) {
+        setErrors((prev) => ({
+          ...prev,
+          fieldPath: "",
+        }));
+      }
 
       return;
     }
@@ -196,9 +181,6 @@ function ValidationRuleForm({
     }));
   };
 
-  /*
-   * Add/update an individual custom error response.
-   */
   const handleErrorResponseChange = (
     validationType,
     field,
@@ -244,9 +226,6 @@ function ValidationRuleForm({
     });
   };
 
-  /*
-   * Get existing error-response configuration.
-   */
   const getErrorResponse = (
     validationType
   ) => {
@@ -262,10 +241,6 @@ function ValidationRuleForm({
     );
   };
 
-  /*
-   * Remove custom configuration for a
-   * particular validation type.
-   */
   const handleRemoveErrorResponse = (
     validationType
   ) => {
@@ -304,13 +279,6 @@ function ValidationRuleForm({
           ? null
           : Number(rule.maxValue),
 
-      /*
-       * Remove empty custom error responses.
-       *
-       * This means if the user doesn't configure
-       * an error response, backend will use the
-       * default validation error.
-       */
       errorResponses:
         (rule.errorResponses || []).filter(
           (response) =>
@@ -320,23 +288,83 @@ function ValidationRuleForm({
     };
   };
 
-  const handleSubmit = () => {
-    if (!rule.fieldPath.trim()) {
+  const scrollToFirstError = (
+    validationErrors
+  ) => {
+    const firstErrorField =
+      Object.keys(validationErrors)[0];
+
+    if (!firstErrorField) {
       return;
     }
 
-    const preparedRule = prepareRule();
+    const element =
+      document.querySelector(
+        `[name="${firstErrorField}"]`
+      );
+
+    if (element) {
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      element.focus();
+    }
+  };
+
+  const handleSubmit = () => {
+    const newErrors = {};
+
+    if (!rule.fieldPath.trim()) {
+      newErrors.fieldPath =
+        "Please select a field.";
+    }
+
+    if (
+      rule.dataType === "String" &&
+      rule.minLength !== "" &&
+      rule.maxLength !== "" &&
+      Number(rule.minLength) >
+        Number(rule.maxLength)
+    ) {
+      newErrors.minLength =
+        "Minimum length cannot be greater than maximum length.";
+    }
+
+    if (
+      rule.dataType === "Number" &&
+      rule.minValue !== "" &&
+      rule.maxValue !== "" &&
+      Number(rule.minValue) >
+        Number(rule.maxValue)
+    ) {
+      newErrors.minValue =
+        "Minimum value cannot be greater than maximum value.";
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      scrollToFirstError(newErrors);
+      return;
+    }
+
+    const preparedRule =
+      prepareRule();
 
     if (isEditing) {
       onUpdate(preparedRule);
     } else {
       onAdd(preparedRule);
       setRule(emptyRule);
+      setErrors({});
     }
   };
 
   const handleCancel = () => {
     setRule(emptyRule);
+    setErrors({});
 
     if (onCancelEdit) {
       onCancelEdit();
@@ -347,31 +375,37 @@ function ValidationRuleForm({
     getValidationTypes(rule);
 
   return (
-    <div className="space-y-5 rounded-xl border bg-slate-50 p-5">
-
-      {/* Field + Type */}
-
-      <div className="grid grid-cols-2 gap-4">
-
-        <Select
-          name="fieldPath"
-          value={rule.fieldPath}
-          onChange={handleChange}
-          disabled={isEditing}
-        >
-          <option value="">
-            Select Field
-          </option>
-
-          {normalizedFields.map((field) => (
-            <option
-              key={field.fieldPath}
-              value={field.fieldPath}
-            >
-              {field.fieldPath}
+    <div className="space-y-5 rounded-xl border bg-slate-50 p-4 sm:p-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <Select
+            name="fieldPath"
+            value={rule.fieldPath}
+            onChange={handleChange}
+            disabled={isEditing}
+          >
+            <option value="">
+              Select Field
             </option>
-          ))}
-        </Select>
+
+            {normalizedFields.map(
+              (field) => (
+                <option
+                  key={field.fieldPath}
+                  value={field.fieldPath}
+                >
+                  {field.fieldPath}
+                </option>
+              )
+            )}
+          </Select>
+
+          {errors.fieldPath && (
+            <p className="mt-2 text-sm text-red-600">
+              {errors.fieldPath}
+            </p>
+          )}
+        </div>
 
         <Select
           name="dataType"
@@ -381,89 +415,80 @@ function ValidationRuleForm({
           <option value="String">
             String
           </option>
-
           <option value="Number">
             Number
           </option>
-
           <option value="Boolean">
             Boolean
           </option>
-
           <option value="Array">
             Array
           </option>
-
           <option value="Object">
             Object
           </option>
         </Select>
-
       </div>
 
-      {getFieldMetadata(rule.fieldPath) && (
-        <p className="text-xs text-slate-500">
-          Schema detected:
-          <span className="ml-1 font-medium text-slate-700">
-            {getFieldMetadata(rule.fieldPath).dataType}
-          </span>
-          <span className="ml-2 font-medium">
-            {getFieldMetadata(rule.fieldPath).isRequired
-              ? "Required"
-              : "Optional"}
-          </span>
-        </p>
-      )}
-
-      {/* Length validations */}
-
       {rule.dataType === "String" && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <Input
+              type="number"
+              name="minLength"
+              placeholder="Min Length"
+              value={rule.minLength}
+              onChange={handleChange}
+            />
 
-          <Input
-            type="number"
-            name="minLength"
-            placeholder="Min Length"
-            value={rule.minLength}
-            onChange={handleChange}
-          />
+            {errors.minLength && (
+              <p className="mt-2 text-sm text-red-600">
+                {errors.minLength}
+              </p>
+            )}
+          </div>
 
-          <Input
-            type="number"
-            name="maxLength"
-            placeholder="Max Length"
-            value={rule.maxLength}
-            onChange={handleChange}
-          />
-
+          <div>
+            <Input
+              type="number"
+              name="maxLength"
+              placeholder="Max Length"
+              value={rule.maxLength}
+              onChange={handleChange}
+            />
+          </div>
         </div>
       )}
-
-      {/* Number validations */}
 
       {rule.dataType === "Number" && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <Input
+              type="number"
+              name="minValue"
+              placeholder="Min Value"
+              value={rule.minValue}
+              onChange={handleChange}
+            />
 
-          <Input
-            type="number"
-            name="minValue"
-            placeholder="Min Value"
-            value={rule.minValue}
-            onChange={handleChange}
-          />
+            {errors.minValue && (
+              <p className="mt-2 text-sm text-red-600">
+                {errors.minValue}
+              </p>
+            )}
+          </div>
 
-          <Input
-            type="number"
-            name="maxValue"
-            placeholder="Max Value"
-            value={rule.maxValue}
-            onChange={handleChange}
-          />
-
+          <div>
+            <Input
+              type="number"
+              name="maxValue"
+              placeholder="Max Value"
+              value={rule.maxValue}
+              onChange={handleChange}
+            />
+          </div>
         </div>
       )}
-
-      {/* Pattern */}
 
       {rule.dataType === "String" && (
         <Input
@@ -474,25 +499,21 @@ function ValidationRuleForm({
         />
       )}
 
-      {/* Required */}
-
-      <label className="flex items-center gap-3">
-
+      <label className="flex cursor-pointer items-center gap-3">
         <input
           type="checkbox"
           name="isRequired"
           checked={rule.isRequired}
           onChange={handleChange}
+          className="h-4 w-4 flex-shrink-0 rounded border-slate-300"
         />
 
-        Required Field
-
+        <span className="text-sm font-medium text-slate-700">
+          Required Field
+        </span>
       </label>
 
-      {/* Error Responses */}
-
-      <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-5">
-
+      <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
         <div>
           <h3 className="text-base font-semibold text-slate-900">
             Validation Error Responses
@@ -500,7 +521,6 @@ function ValidationRuleForm({
 
           <p className="mt-1 text-sm text-slate-500">
             Configure a custom response for each validation failure.
-            Leave the response body empty to use the default validation error.
           </p>
         </div>
 
@@ -516,23 +536,12 @@ function ValidationRuleForm({
                 key={validationType}
                 className="space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4"
               >
-
                 <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-slate-800">
+                    {validationType}
+                  </h4>
 
-                  <div>
-                    <h4 className="font-medium text-slate-800">
-                      {validationType}
-                    </h4>
-
-                    <p className="text-xs text-slate-500">
-                      Error response for{" "}
-                      {validationType}
-                      validation.
-                    </p>
-                  </div>
-
-                  <label className="flex items-center gap-2 text-sm">
-
+                  <label className="flex cursor-pointer items-center gap-2 text-sm">
                     <input
                       type="checkbox"
                       checked={
@@ -545,12 +554,13 @@ function ValidationRuleForm({
                           e.target.checked
                         )
                       }
+                      className="h-4 w-4 flex-shrink-0 rounded border-slate-300"
                     />
 
-                    Enabled
-
+                    <span>
+                      Enabled
+                    </span>
                   </label>
-
                 </div>
 
                 <Input
@@ -569,7 +579,7 @@ function ValidationRuleForm({
                 />
 
                 <textarea
-                  rows={5}
+                  rows={4}
                   placeholder={`{
   "message": "${validationType} validation failed."
 }`}
@@ -599,21 +609,17 @@ function ValidationRuleForm({
                     Clear Custom Response
                   </Button>
                 )}
-
               </div>
             );
           }
         )}
-
       </div>
 
-      {/* Submit */}
-
-      <div className="flex gap-3">
-
+      <div className="flex flex-col gap-3 sm:flex-row">
         <Button
           type="button"
           onClick={handleSubmit}
+          className="w-full sm:w-auto"
         >
           {isEditing
             ? "Update Validation Rule"
@@ -625,13 +631,12 @@ function ValidationRuleForm({
             type="button"
             variant="secondary"
             onClick={handleCancel}
+            className="w-full sm:w-auto"
           >
             Cancel
           </Button>
         )}
-
       </div>
-
     </div>
   );
 }

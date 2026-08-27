@@ -5,7 +5,7 @@ export const importOpenApi = async ({
   collectionId,
   skipExisting = true,
 }) => {
-  const { data } = await api.post("/openapi/import", {
+  const { data } = await api.post("/import/import", {
     specification,
     collectionId,
     skipExisting,

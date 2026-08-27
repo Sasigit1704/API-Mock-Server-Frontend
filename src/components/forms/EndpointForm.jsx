@@ -4,6 +4,8 @@ import {
   X,
   Lock,
   AlertTriangle,
+  ServerCrash,
+  FileWarning,
 } from "lucide-react";
 
 import ValidationRuleForm from "./ValidationRuleForm";
@@ -22,77 +24,64 @@ function EndpointForm({
   collections,
   endpoint,
 }) {
-  const [formData, setFormData] =
-    useState({
-      name: "",
-      method: "GET",
-      path: "",
-      statusCode: 200,
+  const [formData, setFormData] = useState({
+    name: "",
+    method: "GET",
+    path: "",
+    statusCode: 200,
 
-      requestSchema: "",
+    requestSchema: "",
 
-      responseBody: "",
+    responseBody: "",
 
-      validationRules: [],
+    validationRules: [],
 
-      collectionId: "",
+    collectionId: "",
 
-      enablePercentageBasedResponses:
-        false,
+    enablePercentageBasedResponses: false,
 
-      enableInputErrors: true,
+    enableInputErrors: true,
 
-      enableProcessErrors: false,
-      processErrors: [],
+    enableProcessErrors: false,
+    processErrors: [],
 
-      enableRateLimiting: false,
-      rateLimitRequests: 10,
-      rateLimitWindowSeconds: 60,
-      rateLimitStatusCode: 429,
-      rateLimitResponseBody: "{\n  \"message\": \"Rate limit exceeded.\"\n}",
+    enableRateLimiting: false,
+    rateLimitRequests: 10,
+    rateLimitWindowSeconds: 60,
+    rateLimitStatusCode: 429,
+    rateLimitResponseBody:
+      '{\n  "message": "Rate limit exceeded."\n}',
 
-      enableMalformedJson: false,
-      malformedJsonStatusCode: 500,
-      malformedJsonResponseBody: "{\n  \"error\": \"Malformed response\"",
+    enableMalformedJson: false,
+    malformedJsonStatusCode: 500,
+    malformedJsonResponseBody:
+      '{\n  "error": "Malformed response"',
 
-      isEnabled: true,
+    isEnabled: true,
 
-      requiresAuthentication: false,
-      authenticationToken: "",
-    });
+    requiresAuthentication: false,
+    authenticationToken: "",
+  });
 
-  const [errors, setErrors] =
-    useState({});
+  const [errors, setErrors] = useState({});
+  const [parsedFields, setParsedFields] = useState([]);
+  const [editingRuleIndex, setEditingRuleIndex] = useState(null);
 
-  const [parsedFields, setParsedFields] =
-    useState([]);
-
-  const [editingRuleIndex, setEditingRuleIndex] =
-    useState(null);
-
-  const validateForm = (
-    data = formData
-  ) => {
+  const validateForm = (data = formData) => {
     const newErrors = {};
 
     if (!data.name.trim()) {
-      newErrors.name =
-        "Endpoint name is required.";
+      newErrors.name = "Endpoint name is required.";
     }
 
     if (!data.path.trim()) {
-      newErrors.path =
-        "Endpoint path is required.";
-    } else if (
-      !data.path.startsWith("/")
-    ) {
-      newErrors.path =
-        "Path must start with '/'.";
+      newErrors.path = "Endpoint path is required.";
+    } else if (!data.path.startsWith("/")) {
+      newErrors.path = "Path must start with '/'.";
     }
 
     if (!data.collectionId) {
-      newErrors.collectionId =
-        "Please select a collection.";
+      newErrors.collectionId = "Please select a collection.";
     }
 
     if (
@@ -108,9 +97,7 @@ function EndpointForm({
         "Response body is required.";
     } else {
       try {
-        JSON.parse(
-          data.responseBody
-        );
+        JSON.parse(data.responseBody);
       } catch {
         newErrors.responseBody =
           "Response body must be valid JSON.";
@@ -145,6 +132,35 @@ function EndpointForm({
         } catch {
           newErrors.rateLimitResponseBody =
             "Rate limit response body must be valid JSON.";
+        }
+      }
+    }
+
+    if (data.enableProcessErrors) {
+      const processError = data.processErrors?.[0];
+
+      if (!processError) {
+        newErrors.processErrors =
+          "Process error configuration is required.";
+      } else {
+        if (
+          Number(processError.statusCode) < 100 ||
+          Number(processError.statusCode) > 599
+        ) {
+          newErrors.processErrorStatusCode =
+            "Process error status code must be between 100 and 599.";
+        }
+
+        if (!processError.responseBody?.trim()) {
+          newErrors.processErrorResponseBody =
+            "Process error response body is required.";
+        } else {
+          try {
+            JSON.parse(processError.responseBody);
+          } catch {
+            newErrors.processErrorResponseBody =
+              "Process error response body must be valid JSON.";
+          }
         }
       }
     }
@@ -251,12 +267,10 @@ function EndpointForm({
       ...endpoint,
 
       validationRules:
-        endpoint.validationRules ||
-        [],
+        endpoint.validationRules || [],
 
       enablePercentageBasedResponses:
-        endpoint
-          .enablePercentageBasedResponses ??
+        endpoint.enablePercentageBasedResponses ??
         false,
 
       enableInputErrors:
@@ -289,21 +303,22 @@ function EndpointForm({
 
       rateLimitResponseBody:
         endpoint.rateLimitResponseBody ||
-        "{\n  \"message\": \"Rate limit exceeded.\"\n}",
+        '{\n  "message": "Rate limit exceeded."\n}',
 
       enableMalformedJson:
-        endpoint.enableMalformedJson ?? false,
+        endpoint.enableMalformedJson ??
+        false,
 
       malformedJsonStatusCode:
-        endpoint.malformedJsonStatusCode ?? 500,
+        endpoint.malformedJsonStatusCode ??
+        500,
 
       malformedJsonResponseBody:
         endpoint.malformedJsonResponseBody ||
-        "{\n  \"error\": \"Malformed response\"",
+        '{\n  "error": "Malformed response"',
 
       requiresAuthentication:
-        endpoint
-          .requiresAuthentication ??
+        endpoint.requiresAuthentication ??
         false,
 
       authenticationToken:
@@ -473,13 +488,158 @@ function EndpointForm({
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const validationErrors = validateForm();
-      if (Object.keys(validationErrors).length > 0) {
-        scrollToFirstError(validationErrors);
-        return;
+  const isValidProcessErrorJson = () => {
+    const processError =
+      formData.processErrors?.[0];
+
+    if (
+      !processError?.responseBody?.trim()
+    ) {
+      return false;
+    }
+
+    try {
+      JSON.parse(
+        processError.responseBody
+      );
+
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const updateProcessError = (
+    field,
+    value
+  ) => {
+    setFormData(
+      (prev) => {
+        const existingError =
+          prev.processErrors?.[0] || {
+            isEnabled: true,
+            statusCode: 500,
+            responseBody:
+              '{\n  "success": false,\n  "error": "INTERVIEW_PROCESS_FAILED",\n  "message": "Interview processing failed."\n}',
+          };
+
+        return {
+          ...prev,
+
+          processErrors: [
+            {
+              ...existingError,
+              [field]: value,
+            },
+          ],
+        };
       }
+    );
+  };
+
+  const handleProcessErrorToggle =
+    (checked) => {
+      setFormData(
+        (prev) => ({
+          ...prev,
+
+          enableProcessErrors:
+            checked,
+
+          processErrors:
+            checked
+              ? [
+                  prev
+                    .processErrors?.[0] || {
+                    isEnabled: true,
+                    statusCode: 500,
+                    responseBody:
+                      '{\n  "success": false,\n  "error": "INTERVIEW_PROCESS_FAILED",\n  "message": "Interview processing failed."\n}',
+                  },
+                ]
+              : prev.processErrors ||
+                [],
+        })
+      );
+
+      setErrors(
+        (prev) => {
+          const updated = {
+            ...prev,
+          };
+
+          delete updated.processErrors;
+          delete updated.processErrorStatusCode;
+          delete updated.processErrorResponseBody;
+
+          return updated;
+        }
+      );
+    };
+
+  const isValidMalformedJson = () => {
+    const body =
+      formData.malformedJsonResponseBody;
+
+    if (!body?.trim()) {
+      return false;
+    }
+
+    try {
+      JSON.parse(body);
+
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleSubmit = (
+    e
+  ) => {
+    e.preventDefault();
+
+    const validationErrors =
+      validateForm();
+
+    if (
+      Object.keys(
+        validationErrors
+      ).length > 0
+    ) {
+      scrollToFirstError(
+        validationErrors
+      );
+
+      return;
+    }
+
+    const processErrors =
+      formData.enableProcessErrors
+        ? [
+            {
+              ...(formData
+                .processErrors?.[0] ||
+                {}),
+
+              isEnabled: true,
+
+              statusCode: Number(
+                formData
+                  .processErrors?.[0]
+                  ?.statusCode ||
+                  500
+              ),
+
+              responseBody:
+                formData
+                  .processErrors?.[0]
+                  ?.responseBody ||
+                "",
+            },
+          ]
+        : formData.processErrors ||
+          [];
 
     onSave({
       ...formData,
@@ -491,12 +651,14 @@ function EndpointForm({
 
       requiresAuthentication:
         Boolean(
-          formData.requiresAuthentication
+          formData
+            .requiresAuthentication
         ),
 
       enableInputErrors:
         Boolean(
-          formData.enableInputErrors
+          formData
+            .enableInputErrors
         ),
 
       enablePercentageBasedResponses:
@@ -507,43 +669,57 @@ function EndpointForm({
 
       enableProcessErrors:
         Boolean(
-          formData.enableProcessErrors
+          formData
+            .enableProcessErrors
         ),
 
-      processErrors:
-        formData.processErrors || [],
+      processErrors,
 
       enableRateLimiting:
         Boolean(
-          formData.enableRateLimiting
+          formData
+            .enableRateLimiting
         ),
 
       rateLimitRequests:
         Number(
-          formData.rateLimitRequests
+          formData
+            .rateLimitRequests
         ),
 
       rateLimitWindowSeconds:
         Number(
-          formData.rateLimitWindowSeconds
+          formData
+            .rateLimitWindowSeconds
         ),
 
       rateLimitStatusCode:
         Number(
-          formData.rateLimitStatusCode
+          formData
+            .rateLimitStatusCode
         ),
 
       rateLimitResponseBody:
-        formData.rateLimitResponseBody || "",
+        formData
+          .rateLimitResponseBody ||
+        "",
 
       enableMalformedJson:
-        Boolean(formData.enableMalformedJson),
+        Boolean(
+          formData
+            .enableMalformedJson
+        ),
 
       malformedJsonStatusCode:
-        Number(formData.malformedJsonStatusCode),
+        Number(
+          formData
+            .malformedJsonStatusCode
+        ),
 
       malformedJsonResponseBody:
-        formData.malformedJsonResponseBody || "",
+        formData
+          .malformedJsonResponseBody ||
+        "",
     });
   };
 
@@ -592,11 +768,25 @@ function EndpointForm({
             value={formData.method}
             onChange={handleChange}
           >
-            <option value="GET">GET</option>
-            <option value="POST">POST</option>
-            <option value="PUT">PUT</option>
-            <option value="PATCH">PATCH</option>
-            <option value="DELETE">DELETE</option>
+            <option value="GET">
+              GET
+            </option>
+
+            <option value="POST">
+              POST
+            </option>
+
+            <option value="PUT">
+              PUT
+            </option>
+
+            <option value="PATCH">
+              PATCH
+            </option>
+
+            <option value="DELETE">
+              DELETE
+            </option>
           </Select>
         </div>
 
@@ -678,6 +868,7 @@ function EndpointForm({
         </div>
       </div>
 
+      {/* Request Schema */}
       <div>
         <div className="mb-3">
           <h3 className="text-lg font-semibold text-slate-900">
@@ -709,6 +900,7 @@ function EndpointForm({
         />
       </div>
 
+      {/* Input Errors */}
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
         <div className="flex items-start gap-3">
           <div className="rounded-lg bg-amber-100 p-2">
@@ -766,6 +958,7 @@ function EndpointForm({
         </div>
       </div>
 
+      {/* Validation Rules */}
       <div className="space-y-5">
         <div>
           <h3 className="text-lg font-semibold text-slate-900">
@@ -809,8 +1002,9 @@ function EndpointForm({
         />
       </div>
 
+      {/* Default Response */}
       <div>
-        <div className="mb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <label className="text-sm font-medium text-slate-700">
             Default Response Body
           </label>
@@ -835,7 +1029,9 @@ function EndpointForm({
           }
           onChange={handleChange}
           rows={10}
-          placeholder={`{\n  "message": "Success"\n}`}
+          placeholder={`{
+  "message": "Success"
+}`}
           className={`w-full rounded-xl border px-4 py-3 font-mono text-sm transition focus:outline-none focus:ring-4 ${
             errors.responseBody
               ? "border-red-500 focus:ring-red-100"
@@ -888,6 +1084,157 @@ function EndpointForm({
         </div>
       </div>
 
+      {/* Process Errors */}
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
+        <div className="flex items-start gap-3">
+          <div className="rounded-lg bg-red-100 p-2">
+            <ServerCrash
+              size={20}
+              className="text-red-600"
+            />
+          </div>
+
+          <div className="flex-1">
+            <h3 className="font-semibold text-slate-900">
+              Process Errors
+            </h3>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Simulate an internal processing failure returned by the mock endpoint.
+            </p>
+          </div>
+        </div>
+
+        <label className="mt-5 flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            name="enableProcessErrors"
+            checked={
+              formData.enableProcessErrors
+            }
+            onChange={(e) =>
+              handleProcessErrorToggle(
+                e.target.checked
+              )
+            }
+            className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 flex-shrink-0"
+          />
+
+          <div>
+            <p className="text-sm font-medium text-slate-800">
+              Enable Process Errors
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              When enabled, the configured process-error response is returned instead of the normal endpoint response.
+            </p>
+          </div>
+        </label>
+
+        <div className="mt-4">
+          <Badge
+            variant={
+              formData.enableProcessErrors
+                ? "error"
+                : "secondary"
+            }
+          >
+            {formData.enableProcessErrors
+              ? "Process error simulation enabled"
+              : "Process error simulation disabled"}
+          </Badge>
+        </div>
+
+        {formData.enableProcessErrors && (
+          <div className="mt-5 space-y-4 rounded-xl border border-red-100 bg-white p-4">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Process Error Status Code
+              </label>
+
+              <Input
+                type="number"
+                min="100"
+                max="599"
+                name="processErrorStatusCode"
+                value={
+                  formData
+                    .processErrors?.[0]
+                    ?.statusCode ?? 500
+                }
+                onChange={(e) =>
+                  updateProcessError(
+                    "statusCode",
+                    Number(
+                      e.target.value
+                    )
+                  )
+                }
+              />
+
+              {errors.processErrorStatusCode && (
+                <p className="mt-2 text-sm text-red-600">
+                  {
+                    errors.processErrorStatusCode
+                  }
+                </p>
+              )}
+            </div>
+
+            <div>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <label className="text-sm font-medium text-slate-700">
+                  Process Error Response Body
+                </label>
+
+                <Badge
+                  variant={
+                    isValidProcessErrorJson()
+                      ? "success"
+                      : "error"
+                  }
+                >
+                  {isValidProcessErrorJson()
+                    ? "Valid JSON"
+                    : "Invalid JSON"}
+                </Badge>
+              </div>
+
+              <textarea
+                name="processErrorResponseBody"
+                value={
+                  formData
+                    .processErrors?.[0]
+                    ?.responseBody ?? ""
+                }
+                onChange={(e) =>
+                  updateProcessError(
+                    "responseBody",
+                    e.target.value
+                  )
+                }
+                rows={7}
+                className="w-full rounded-xl border border-slate-300 px-4 py-3 font-mono text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                placeholder={`{
+  "success": false,
+  "error": "PROCESS_ERROR",
+  "message": "Interview processing failed."
+}`}
+              />
+
+              {errors.processErrorResponseBody && (
+                <p className="mt-2 text-sm text-red-600">
+                  {
+                    errors.processErrorResponseBody
+                  }
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Response Selection */}
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
         <div className="mb-4">
           <h3 className="font-semibold text-slate-900">
@@ -923,11 +1270,13 @@ function EndpointForm({
         </label>
       </div>
 
+      {/* Rate Limiting */}
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
         <div className="mb-4">
           <h3 className="font-semibold text-slate-900">
             Rate Limiting
           </h3>
+
           <p className="mt-1 text-sm text-slate-500">
             Simulate a request limit for this endpoint within a fixed time window.
           </p>
@@ -937,14 +1286,18 @@ function EndpointForm({
           <input
             type="checkbox"
             name="enableRateLimiting"
-            checked={formData.enableRateLimiting}
+            checked={
+              formData.enableRateLimiting
+            }
             onChange={handleChange}
             className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 flex-shrink-0"
           />
+
           <div>
             <p className="text-sm font-medium text-slate-800">
               Enable Rate Limiting
             </p>
+
             <p className="mt-1 text-xs text-slate-500">
               After the configured number of requests, further requests receive rate limits.
             </p>
@@ -958,11 +1311,15 @@ function EndpointForm({
                 <label className="mb-2 block text-sm font-medium text-slate-700">
                   Requests Allowed
                 </label>
+
                 <Input
                   type="number"
                   min="1"
                   name="rateLimitRequests"
-                  value={formData.rateLimitRequests}
+                  value={
+                    formData
+                      .rateLimitRequests
+                  }
                   onChange={handleChange}
                 />
               </div>
@@ -971,11 +1328,15 @@ function EndpointForm({
                 <label className="mb-2 block text-sm font-medium text-slate-700">
                   Window (seconds)
                 </label>
+
                 <Input
                   type="number"
                   min="1"
                   name="rateLimitWindowSeconds"
-                  value={formData.rateLimitWindowSeconds}
+                  value={
+                    formData
+                      .rateLimitWindowSeconds
+                  }
                   onChange={handleChange}
                 />
               </div>
@@ -984,12 +1345,16 @@ function EndpointForm({
                 <label className="mb-2 block text-sm font-medium text-slate-700">
                   Limit Status Code
                 </label>
+
                 <Input
                   type="number"
                   min="100"
                   max="599"
                   name="rateLimitStatusCode"
-                  value={formData.rateLimitStatusCode}
+                  value={
+                    formData
+                      .rateLimitStatusCode
+                  }
                   onChange={handleChange}
                 />
               </div>
@@ -999,18 +1364,163 @@ function EndpointForm({
               <label className="mb-2 block text-sm font-medium text-slate-700">
                 Rate Limit Response Body
               </label>
+
               <textarea
                 name="rateLimitResponseBody"
-                value={formData.rateLimitResponseBody}
+                value={
+                  formData
+                    .rateLimitResponseBody
+                }
                 onChange={handleChange}
                 rows={5}
                 className="w-full rounded-xl border border-slate-300 px-4 py-3 font-mono text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
               />
+
+              {errors.rateLimitResponseBody && (
+                <p className="mt-2 text-sm text-red-600">
+                  {
+                    errors.rateLimitResponseBody
+                  }
+                </p>
+              )}
             </div>
           </div>
         )}
       </div>
 
+      {/* Malformed JSON */}
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
+        <div className="flex items-start gap-3">
+          <div className="rounded-lg bg-orange-100 p-2">
+            <FileWarning
+              size={20}
+              className="text-orange-600"
+            />
+          </div>
+
+          <div className="flex-1">
+            <h3 className="font-semibold text-slate-900">
+              Malformed JSON
+            </h3>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Intentionally return an invalid JSON response to simulate malformed server data.
+            </p>
+          </div>
+        </div>
+
+        <label className="mt-5 flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            name="enableMalformedJson"
+            checked={
+              formData.enableMalformedJson
+            }
+            onChange={handleChange}
+            className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 flex-shrink-0"
+          />
+
+          <div>
+            <p className="text-sm font-medium text-slate-800">
+              Enable Malformed JSON
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              When enabled, the endpoint returns the configured response body even when that body is not valid JSON.
+            </p>
+          </div>
+        </label>
+
+        <div className="mt-4">
+          <Badge
+            variant={
+              formData.enableMalformedJson
+                ? "warning"
+                : "secondary"
+            }
+          >
+            {formData.enableMalformedJson
+              ? "Malformed JSON simulation enabled"
+              : "Malformed JSON simulation disabled"}
+          </Badge>
+        </div>
+
+        {formData.enableMalformedJson && (
+          <div className="mt-5 space-y-4 rounded-xl border border-orange-100 bg-white p-4">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Malformed JSON Status Code
+              </label>
+
+              <Input
+                type="number"
+                min="100"
+                max="599"
+                name="malformedJsonStatusCode"
+                value={
+                  formData
+                    .malformedJsonStatusCode
+                }
+                onChange={handleChange}
+              />
+
+              {errors.malformedJsonStatusCode && (
+                <p className="mt-2 text-sm text-red-600">
+                  {
+                    errors.malformedJsonStatusCode
+                  }
+                </p>
+              )}
+            </div>
+
+            <div>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <label className="text-sm font-medium text-slate-700">
+                  Malformed JSON Response Body
+                </label>
+
+                <Badge
+                  variant={
+                    isValidMalformedJson()
+                      ? "success"
+                      : "warning"
+                  }
+                >
+                  {isValidMalformedJson()
+                    ? "Valid JSON"
+                    : "Intentionally Invalid"}
+                </Badge>
+              </div>
+
+              <textarea
+                name="malformedJsonResponseBody"
+                value={
+                  formData
+                    .malformedJsonResponseBody
+                }
+                onChange={handleChange}
+                rows={7}
+                className="w-full rounded-xl border border-orange-200 bg-slate-900 px-4 py-3 font-mono text-sm text-orange-300 focus:border-orange-500 focus:outline-none focus:ring-4 focus:ring-orange-100"
+                placeholder={`{"interviewId":"INT-1004","status":"Completed"`}
+              />
+
+              {errors.malformedJsonResponseBody && (
+                <p className="mt-2 text-sm text-red-600">
+                  {
+                    errors.malformedJsonResponseBody
+                  }
+                </p>
+              )}
+
+              <p className="mt-2 text-xs text-slate-500">
+                For a malformed JSON test, intentionally leave the JSON incomplete or otherwise invalid.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Authentication */}
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
         <div className="mb-4 flex items-start gap-3">
           <div className="rounded-lg bg-blue-100 p-2">
@@ -1065,10 +1575,19 @@ function EndpointForm({
               onChange={handleChange}
               placeholder="Enter authentication token"
             />
+
+            {errors.authenticationToken && (
+              <p className="mt-2 text-sm text-red-600">
+                {
+                  errors.authenticationToken
+                }
+              </p>
+            )}
           </div>
         )}
       </div>
 
+      {/* Endpoint Enabled */}
       <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-4">
         <input
           id="enabled"
@@ -1083,12 +1602,13 @@ function EndpointForm({
 
         <label
           htmlFor="enabled"
-          className="text-sm font-medium text-slate-700 cursor-pointer"
+          className="cursor-pointer text-sm font-medium text-slate-700"
         >
           Endpoint Enabled
         </label>
       </div>
 
+      {/* Actions */}
       <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end">
         <Button
           type="button"
@@ -1096,12 +1616,23 @@ function EndpointForm({
           onClick={onCancel}
           className="w-full sm:w-auto"
         >
-          <X size={18} className="mr-2" />
+          <X
+            size={18}
+            className="mr-2"
+          />
+
           Cancel
         </Button>
 
-        <Button type="submit" className="w-full sm:w-auto">
-          <Save size={18} className="mr-2" />
+        <Button
+          type="submit"
+          className="w-full sm:w-auto"
+        >
+          <Save
+            size={18}
+            className="mr-2"
+          />
+
           {endpoint
             ? "Update Endpoint"
             : "Save Endpoint"}

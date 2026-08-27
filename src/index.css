@@ -60,3 +60,23 @@ body {
   --shadow-lg: 0 12px 30px rgba(15, 23, 42, 0.12);
   --transition: all 0.2s ease;
 }
+
+/* Automatically scale down elements on screens smaller than 640px (Phones) */
+@media (max-width: 640px) {
+  html {
+    font-size: 14px; /* Default is usually 16px; dropping this shrinks all rem-based sizes proportionally */
+  }
+
+  /* Compact padding and spacing globally for mobile views */
+  .p-8, .sm\:p-8 {
+    padding: 1rem !important;
+  }
+  
+  .space-y-6 > * + * {
+    margin-top: 1rem !important;
+  }
+
+  h1 {
+    font-size: 1.75rem !important; /* Shrinks massive headers down to fit mobile screens */
+  }
+}
